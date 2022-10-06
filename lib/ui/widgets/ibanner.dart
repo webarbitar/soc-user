@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:socspl/core/modal/banner/banner_modal.dart';
 import 'package:socspl/core/modal/banner/promo_banner.dart';
+import 'package:socspl/ui/views/service/service_view.dart';
 
 import '../../core/modal/banner.dart';
 
@@ -80,7 +81,14 @@ class _IBannerState extends State<IBanner> {
     var _id = UniqueKey().toString();
     return InkWell(
         onTap: () {
-          // widget.callback(item.id, _id, item.serverImage);
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ServiceView(
+                childCategoryId: item.childCategoryId,
+              ),
+            ),
+          );
         }, // needed
         child: Stack(
           children: <Widget>[
@@ -200,20 +208,22 @@ class _IBannerState extends State<IBanner> {
           ),
         ),
         Container(
-            height: widget.height,
-            child: Align(
-                alignment: Alignment.bottomRight,
-                child: Container(
-                    margin: const EdgeInsets.only(bottom: 25, right: 25),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: _lines(),
-                    )))),
+          height: widget.height,
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 25, right: 25),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: _lines(),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 }
-
 
 class PromoBanner extends StatefulWidget {
   final List<PromoBannerModal> banner;
@@ -290,6 +300,14 @@ class _PromoBannerState extends State<PromoBanner> {
     return InkWell(
         onTap: () {
           // widget.callback(item.id, _id, item.serverImage);
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ServiceView(
+                childCategoryId: item.childCategoryId,
+              ),
+            ),
+          );
         }, // needed
         child: Stack(
           children: <Widget>[

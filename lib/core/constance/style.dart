@@ -11,6 +11,13 @@ const backgroundColor = Color.fromRGBO(246, 247, 251, 1);
 const highlightColor = Color.fromRGBO(237, 238, 240, 1);
 const highlightColor2 = Color.fromRGBO(241, 232, 232, 1);
 
+const dropShadow = BoxShadow(
+  offset: Offset(0, 4),
+  blurRadius: 16,
+  spreadRadius: 0,
+  color: Color.fromRGBO(0, 0, 0, .08),
+);
+
 const systemOverlayStyle = SystemUiOverlayStyle(
   statusBarColor: backgroundColor,
   systemNavigationBarColor: Colors.white,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/constance/style.dart';
 import 'package:socspl/core/view_modal/auth/auth_view_modal.dart';
@@ -9,6 +10,7 @@ import 'ui/shared/navigation/navigation.dart';
 import 'ui/shared/navigation/routes.dart';
 
 Future<void> main() async {
+  // debugRepaintRainbowEnabled = true;
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }

@@ -1,4 +1,5 @@
 import 'package:socspl/core/modal/category/add_on_modal.dart';
+import 'package:socspl/core/modal/category/rate_card_model.dart';
 
 class CategoryServiceModal {
   int id;
@@ -14,6 +15,7 @@ class CategoryServiceModal {
   String imageUrl;
   List<PriceModal> prices;
   List<AddOnModal> addOns;
+  List<RateCardModel> rateCards;
 
   CategoryServiceModal.fromJson(Map<String, dynamic> json)
       : id = json['id'],
@@ -22,13 +24,15 @@ class CategoryServiceModal {
         subCategoryId = json['sub_category_id'],
         childCategoryId = json['child_category_id'],
         description = json['description'],
-        image = json['image'],
+        image = json['image'] ?? "",
         status = json['status'],
         createdAt = json['created_at'],
         updatedAt = json['updated_at'],
-        imageUrl = json['image_url'],
+        imageUrl = json['image_url'] ?? "",
         prices = PriceModal.parseFromList(json["prices"] ?? []),
-        addOns = AddOnModal.parseFromList(json["add_ons"] ?? []);
+        addOns = AddOnModal.parseFromList(json["add_ons"] ?? []),
+        rateCards = RateCardModel.fromJsonList(json["rate_cards"] ?? []);
+
 
   static List<CategoryServiceModal> parseFromList(List json) {
     if (json.isNotEmpty) {

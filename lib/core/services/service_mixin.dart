@@ -78,7 +78,7 @@ mixin ServiceMixin {
     }
   }
 
-  Future<ResponseModal> streamErrorResponse(StreamedResponse res) async {
+  Future<ResponseModal<T>> streamErrorResponse<T>(StreamedResponse res) async {
     switch (res.statusCode) {
       case 400:
         final respStr = await res.stream.bytesToString();

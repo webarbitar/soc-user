@@ -16,7 +16,7 @@ class MapService with ServiceMixin {
     Uri uri = parseUri(
         "$mapGecode?latlng=${"${position.latitude},${position.longitude}"}&location_type=APPROXIMATE&key=$mapToken");
     final res = await http.get(uri);
-    log(res.body);
+    // log(res.body);
     try {
       switch (res.statusCode) {
         case 200:

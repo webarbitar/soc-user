@@ -6,6 +6,7 @@ import 'package:socspl/core/modal/category/category_banner_modal.dart';
 import 'package:socspl/core/modal/category/category_modal.dart';
 import 'package:http/http.dart' as http;
 import 'package:socspl/core/modal/category/child_category_modal.dart';
+import 'package:socspl/core/modal/category/rate_card_model.dart';
 import 'package:socspl/core/modal/category/sub_category_modal.dart';
 import 'package:socspl/core/modal/category/trending_category_modal.dart';
 import 'package:socspl/core/modal/section/section_modal.dart';
@@ -176,6 +177,23 @@ class CategoryService with ServiceMixin {
       case 200:
         final jsonData = jsonDecode(res.body);
         final data = SectionModal.fromJsonList(jsonData["data"] ?? []);
+        return ResponseModal.success(data: data);
+      default:
+        return errorResponse(res);
+    }
+  }
+
+  Future<ResponseModal<List<RateCardModel>>> fetchRateCard(int childCategoryId) async {
+    final header = {"Authorization": "Bearer ${_storage.token}"};
+    final res = await http.get(
+      parseUri("$rateCard?child_category_id=$childCategoryId"),
+      headers: header,
+    );
+    print(res.body);
+    switch (res.statusCode) {
+      case 200:
+        final jsonData = jsonDecode(res.body);
+        final data = RateCardModel.fromJsonList(jsonData["data"] ?? []);
         return ResponseModal.success(data: data);
       default:
         return errorResponse(res);

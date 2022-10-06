@@ -1,12 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/modal/service/category_service_modal.dart';
+import 'package:socspl/ui/views/category/rate_card/rate_card_view.dart';
+import 'package:socspl/ui/widgets/view/service/service_widget.dart';
 
 import '../../../core/constance/strings.dart';
 import '../../../core/constance/style.dart';
+import '../../../core/modal/cart/cart_model.dart';
 import '../../../core/modal/category/add_on_modal.dart';
+import '../../../core/utils/storage/storage.dart';
+import '../../../core/view_modal/cart/cart_view_model.dart';
 import '../../../core/view_modal/home/home_view_modal.dart';
+import '../../shared/navigation/navigation.dart';
 import '../../shared/ui_helpers.dart';
 import '../../widgets/buttons/button134.dart';
 import '../../widgets/buttons/button2.dart';
@@ -33,18 +41,24 @@ class ServiceView extends StatefulWidget {
 }
 
 class _ServiceViewState extends State<ServiceView> {
+  final _busyNfy = ValueNotifier(false);
   final _searchCtrl = TextEditingController();
   final _totalNfy = ValueNotifier<int>(0);
 
   @override
   void initState() {
     super.initState();
-    context.read<HomeViewModal>().fetchAllServicesByCategoryIds(
-          "${widget.categoryId ?? ""}",
-          "${widget.subCategoryId ?? ""}",
-          "${widget.childCategoryId ?? ""}",
-          search: widget.searchKey,
-        );
+    final model = context.read<HomeViewModal>();
+    _busyNfy.value = true;
+    final res = model.fetchAllServicesByCategoryIds(
+      "${widget.categoryId ?? ""}",
+      "${widget.subCategoryId ?? ""}",
+      childCategoryId: "${widget.childCategoryId ?? ""}",
+      search: widget.searchKey,
+    );
+    res.then((value) {
+      _busyNfy.value = false;
+    });
     _searchCtrl.text = widget.searchKey;
   }
 
@@ -65,109 +79,160 @@ class _ServiceViewState extends State<ServiceView> {
         ),
         elevation: 0.0,
       ),
-      body: Consumer<HomeViewModal>(builder: (context, modal, _) {
-        if (modal.busy) {
-          return const Center(
-            child: LoaderWidget(),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Edit26(
-                hint: strings.get(24),
-                color: (darkMode) ? Colors.black : Colors.white,
-                style: theme.style14W400,
-                radius: 10,
-                useAlpha: false,
-                icon: Icons.search,
-                controller: _searchCtrl,
-                suffixIcon: Icons.cancel,
-                onSuffixIconPress: () {
-                  _searchCtrl.text = "";
-                },
-                onSubmit: (val) {
-                  modal.fetchAllServicesByCategoryIds(
-                    "${widget.categoryId ?? ""}",
-                    "${widget.subCategoryId ?? ""}",
-                    "${widget.childCategoryId ?? ""}",
-                    search: val.trim(),
-                  );
-                },
+      bottomNavigationBar: Consumer(builder: (context, CartViewModel model, _) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 8.0,
+            horizontal: 14,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  "₹ ${model.getTotalPrice()}",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-            UIHelper.verticalSpaceSmall,
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  if (modal.categoryServices.isEmpty) {
-                    return SizedBox(
-                      child: Center(
-                        child: Text(
-                          "No data found",
-                          style: theme.style10W600Grey,
-                        ),
+              Flexible(
+                child: SizedBox(
+                  width: 160,
+                  height: 45,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    child: const Text(
+                      "View Cart",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: "Montserrat",
+                        fontSize: 14,
+                        height: 1.3,
+                        fontWeight: FontWeight.w600,
                       ),
-                    );
-                  }
-                  return ListView.builder(
-                    itemCount: modal.categoryServices.length,
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    itemBuilder: (context, index) {
-                      final item = modal.categoryServices[index];
-                      return Container(
-                        height: 140,
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: button202z(
-                          item.name,
-                          theme.style11W600,
-                          "Provider",
-                          theme.style11W600Grey,
-                          // price
-                          // "\$${item.price[0].price.toStringAsFixed(0)}",
-                          "₹ ${item.prices.first.price}",
-                          // item.price[0].discPrice == 0
-                          //     ? theme.style13W800
-                          //     : theme.style13W400D,
-                          theme.style13W800,
-                          // discount price
-                          // item.price[0].discPrice != 0
-                          //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
-                          //     : "",
-                          "",
-                          theme.style13W800Red,
-                          //
-                          4,
-                          Colors.orangeAccent,
-                          (darkMode) ? Colors.black : Colors.white,
-                          // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
-                          item.imageUrl,
-                          constraints.maxWidth,
-                          8,
-                          false,
-                          (bool val) {
-                            print('$val');
-                          },
-                          "",
-                          theme.style10W400White,
-                          false,
-                          () {
-                            showServiceModalView(item);
-                          },
-                          true,
-                        ),
-                      );
-                    },
-                  );
-                },
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       }),
+      body: ValueListenableBuilder(
+          valueListenable: _busyNfy,
+          builder: (context, bool busy, _) {
+            if (busy) {
+              return const Center(
+                child: LoaderWidget(),
+              );
+            }
+            return Consumer<HomeViewModal>(builder: (context, modal, _) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Edit26(
+                      hint: strings.get(24),
+                      color: (darkMode) ? Colors.black : Colors.white,
+                      style: theme.style14W400,
+                      radius: 10,
+                      useAlpha: false,
+                      icon: Icons.search,
+                      controller: _searchCtrl,
+                      suffixIcon: Icons.cancel,
+                      onSuffixIconPress: () {
+                        _searchCtrl.text = "";
+                      },
+                      onSubmit: (val) {
+                        modal.fetchAllServicesByCategoryIds(
+                          "${widget.categoryId ?? ""}",
+                          "${widget.subCategoryId ?? ""}",
+                          childCategoryId: "${widget.childCategoryId ?? ""}",
+                          search: val.trim(),
+                        );
+                      },
+                    ),
+                  ),
+                  UIHelper.verticalSpaceSmall,
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (modal.categoryServices.isEmpty) {
+                          return SizedBox(
+                            child: Center(
+                              child: Text(
+                                "No data found",
+                                style: theme.style10W600Grey,
+                              ),
+                            ),
+                          );
+                        }
+                        return ListView.builder(
+                          itemCount: modal.categoryServices.length,
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          itemBuilder: (context, index) {
+                            final item = modal.categoryServices[index];
+                            return ServiceWidget(
+                              data: item,
+                              onTap: () {
+                                showServiceModalView(item);
+                              },
+                            );
+                            // return Container(
+                            //   height: 140,
+                            //   margin: const EdgeInsets.only(bottom: 8),
+                            //   child: button202z(
+                            //     item.name,
+                            //     theme.style11W600,
+                            //     "Provider",
+                            //     theme.style11W600Grey,
+                            //     // price
+                            //     // "\$${item.price[0].price.toStringAsFixed(0)}",
+                            //     "₹ ${item.prices.first.price}",
+                            //     // item.price[0].discPrice == 0
+                            //     //     ? theme.style13W800
+                            //     //     : theme.style13W400D,
+                            //     theme.style13W800,
+                            //     // discount price
+                            //     // item.price[0].discPrice != 0
+                            //     //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
+                            //     //     : "",
+                            //     "",
+                            //     theme.style13W800Red,
+                            //     //
+                            //     4,
+                            //     Colors.orangeAccent,
+                            //     (darkMode) ? Colors.black : Colors.white,
+                            //     // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
+                            //     item.imageUrl,
+                            //     constraints.maxWidth,
+                            //     8,
+                            //     false,
+                            //     (bool val) {
+                            //       print('$val');
+                            //     },
+                            //     "",
+                            //     theme.style10W400White,
+                            //     false,
+                            //     () {
+                            //       showServiceModalView(item);
+                            //     },
+                            //     true,
+                            //   ),
+                            // );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            });
+          }),
     );
   }
 
@@ -191,15 +256,11 @@ class AddOnViewWidget extends StatefulWidget {
 }
 
 class _AddOnViewWidgetState extends State<AddOnViewWidget> {
-  final totalNfy = ValueNotifier<int>(0);
   final busyNfy = ValueNotifier(true);
-  final qtyNfy = ValueNotifier(1);
-  final addOnNfy = ValueNotifier<List<AddOnModal>>([]);
 
   @override
   void initState() {
     super.initState();
-    totalNfy.value = widget.data.prices.first.price;
     final modal = context.read<HomeViewModal>();
     final res = modal.fetchServicesById("${widget.data.id}");
     // final res = modal.fetchAddOnModal(widget.data.id);
@@ -211,229 +272,362 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
   @override
   Widget build(BuildContext context) {
     final modal = context.read<HomeViewModal>();
-    return ValueListenableBuilder(
-      valueListenable: busyNfy,
-      builder: (context, bool val, _) {
-        if (val) {
-          return const Center(
-            child: LoaderWidget(),
-          );
-        }
-        final data = modal.serviceModal!;
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          shrinkWrap: true,
-          children: [
-            SizedBox(
-              height: 140,
-              child: button202z(
-                data.name,
-                theme.style11W600,
-                "Providers",
-                theme.style11W600Grey,
-                // price
-                // "\$${item.price[0].price.toStringAsFixed(0)}",
-                "₹ ${data.prices.first.price}",
-                // item.price[0].discPrice == 0
-                //     ? theme.style13W800
-                //     : theme.style13W400D,
-                theme.style13W800,
-                // discount price
-                // item.price[0].discPrice != 0
-                //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
-                //     : "",
-                "",
-                theme.style13W800Red,
-                //
-                4,
-                Colors.orangeAccent,
-                (darkMode) ? Colors.black : Colors.white,
-                // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
-                data.imageUrl,
-                double.maxFinite,
-                8,
-                false,
-                (bool val) {
-                  print('$val');
-                },
-                "",
-                theme.style10W400White,
-                false,
-                () {
-                  // widget.openDialogService(item);
-                },
-                true,
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Text("Description", style: theme.style12W800),
-            const SizedBox(
-              height: 5,
-            ),
-            Text((data.description).isNotEmpty ? data.description : "No description",
-                style: theme.style12W400),
-            const SizedBox(
-              height: 20,
-            ),
-            Row(
-              children: [
-                Expanded(
-                    child: Text(strings.get(92),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(12),
+      ),
+      child: DraggableScrollableSheet(
+          initialChildSize: 1.0,
+          expand: false,
+          builder: (context, controller) {
+            return ValueListenableBuilder(
+              valueListenable: busyNfy,
+              builder: (context, bool val, _) {
+                if (val) {
+                  return const Center(
+                    child: LoaderWidget(),
+                  );
+                }
+                final data = modal.serviceModal!;
+                return Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: controller,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CachedNetworkImage(imageUrl: data.imageUrl),
+                            UIHelper.verticalSpaceMedium,
 
-                        /// "Quantity",
-                        style: theme.style12W800)),
-                ValueListenableBuilder<int>(
-                  valueListenable: qtyNfy,
-                  builder: (context, val, _) {
-                    return buildQuantityView(
-                      val,
-                      onIncrement: () {
-                        val++;
-                        qtyNfy.value = val;
-                        totalNfy.value += 300;
-                      },
-                      onDecrement: () {
-                        val--;
-                        qtyNfy.value = val;
-                        totalNfy.value -= 300;
-                      },
-                    );
-                  },
-                )
-              ],
-            ),
-            ValueListenableBuilder<List<AddOnModal>>(
-              valueListenable: addOnNfy,
-              builder: (context, val, _) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    double width = constraints.maxWidth / 3;
-                    if (modal.addOnList.isEmpty) {
-                      return Container();
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        UIHelper.verticalSpaceSmall,
-                        Text(strings.get(93), style: theme.style12W800),
-                        UIHelper.verticalSpaceSmall,
-                        Wrap(
-                          runSpacing: 12,
-                          spacing: 12,
-                          children: modal.addOnList.map((data) {
-                            List<AddOnModal> ads = [...val];
-                            // Get index of the each object
-                            int index = ads.indexOf(data);
-                            // Check is the value is present or not
-                            bool isActive = val.contains(data);
-
-                            return SizedBox(
-                              width: width,
+                            // SizedBox(
+                            //   height: 140,
+                            //   child: button202z(
+                            //     data.name,
+                            //     theme.style11W600,
+                            //     "Providers",
+                            //     theme.style11W600Grey,
+                            //     // price
+                            //     // "\$${item.price[0].price.toStringAsFixed(0)}",
+                            //     "₹ ${data.prices.first.price}",
+                            //     // item.price[0].discPrice == 0
+                            //     //     ? theme.style13W800
+                            //     //     : theme.style13W400D,
+                            //     theme.style13W800,
+                            //     // discount price
+                            //     // item.price[0].discPrice != 0
+                            //     //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
+                            //     //     : "",
+                            //     "",
+                            //     theme.style13W800Red,
+                            //     //
+                            //     4,
+                            //     Colors.orangeAccent,
+                            //     (darkMode) ? Colors.black : Colors.white,
+                            //     // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
+                            //     data.imageUrl,
+                            //     double.maxFinite,
+                            //     8,
+                            //     false,
+                            //     (bool val) {
+                            //       print('$val');
+                            //     },
+                            //     "",
+                            //     theme.style10W400White,
+                            //     false,
+                            //     () {
+                            //       // widget.openDialogService(item);
+                            //     },
+                            //     true,
+                            //   ),
+                            // ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
                               child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildAddOnView(
-                                    data,
-                                    width: width,
-                                    onTap: () {
-                                      if (!isActive) {
-                                        ads.add(data);
-                                        totalNfy.value += data.price;
-                                      } else {
-                                        ads.remove(data);
-                                        totalNfy.value -= data.price;
-                                      }
-                                      addOnNfy.value = ads;
-                                    },
-                                    isActive: isActive,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              data.name,
+                                              style: const TextStyle(
+                                                fontFamily: "Montserrat",
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              children: [
+                                                RatingBarIndicator(
+                                                  rating: 4.75,
+                                                  itemBuilder: (context, index) => const Icon(
+                                                    Icons.star,
+                                                    color: Colors.orange,
+                                                  ),
+                                                  itemCount: 5,
+                                                  itemSize: 18.0,
+                                                  direction: Axis.horizontal,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                const Text("4.75 (2.3K)")
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Consumer<CartViewModel>(
+                                        builder: (context, CartViewModel model, _) {
+                                          CartModel? cart = model.containsService(data);
+                                          if (cart != null && cart.quantity != 0) {
+                                            return Material(
+                                              elevation: 2.0,
+                                              borderRadius: BorderRadius.circular(4),
+                                              color: Theme.of(context).primaryColor,
+                                              child: SizedBox(
+                                                height: 30,
+                                                width: 70,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(2.0),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      InkWell(
+                                                        onTap: () {
+                                                          model.increaseServiceQty(cart);
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.add,
+                                                          color: Colors.white,
+                                                          size: 22,
+                                                        ),
+                                                      ),
+                                                      Flexible(
+                                                        child: Text(
+                                                          "${cart.quantity}",
+                                                          style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          softWrap: false,
+                                                          overflow: TextOverflow.clip,
+                                                        ),
+                                                      ),
+                                                      InkWell(
+                                                        onTap: () {
+                                                          model.decreaseServiceQty(cart);
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.remove,
+                                                          color: Colors.white,
+                                                          size: 22,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          } else {
+                                            return SizedBox(
+                                              height: 30,
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  if (Storage.instance.isLogin) {
+                                                    if (cart != null) {
+                                                      model.increaseServiceQty(cart);
+                                                    } else {
+                                                      var price = 0;
+                                                      if (data.prices.isNotEmpty) {
+                                                        price = data.prices.first.price;
+                                                      }
+                                                      model.addServiceToCart(
+                                                        CartModel(
+                                                          service: data,
+                                                          quantity: 1,
+                                                          totalPrice: price,
+                                                        ),
+                                                      );
+                                                    }
+                                                  } else {
+                                                    Navigation.instance
+                                                        .navigate("/login", args: false);
+                                                  }
+                                                },
+                                                child: const Text(
+                                                  "Add",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  if (isActive) UIHelper.verticalSpaceSmall,
-                                  if (isActive)
-                                    buildQuantityView(
-                                      data.quantity,
-                                      onIncrement: () {
-                                        data.quantity++;
-                                        ads[index] = data;
-                                        addOnNfy.value = ads;
-                                        // Increase service cost
-                                        totalNfy.value += data.price;
-                                      },
-                                      onDecrement: () {
-                                        data.quantity--;
-                                        ads[index] = data;
-                                        addOnNfy.value = ads;
-                                        // Decrease service cost
-                                        totalNfy.value -= data.price;
-                                      },
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "₹ ${data.prices.first.price}",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontFamily: "Montserrat",
+                                      fontWeight: FontWeight.bold,
                                     ),
+                                  ),
+                                  UIHelper.verticalSpaceMedium,
+                                  if (data.rateCards.isNotEmpty)
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                RateCardView(childCategoryId: data.childCategoryId),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: Colors.grey.shade200),
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.list_alt_outlined,
+                                              color: Colors.orange.shade200,
+                                            ),
+                                            UIHelper.horizontalSpaceSmall,
+                                            const Text(
+                                              "Charge will be as per rate card",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontFamily: "Montserrat",
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            UIHelper.horizontalSpaceSmall,
+                                            const Icon(Icons.keyboard_arrow_right_outlined),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  UIHelper.verticalSpaceMedium,
+                                  const Divider(thickness: 5),
+                                  UIHelper.verticalSpaceMedium,
+                                  Text("Description", style: theme.style12W800),
+                                  const SizedBox(height: 5),
+                                  Html(
+                                    data: data.description,
+                                    style: {
+                                      "body": Style(
+                                        margin: EdgeInsets.zero,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                    },
+                                  ),
+                                  UIHelper.verticalSpaceMedium,
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      double width = (constraints.maxWidth / 3) - 8;
+                                      if (modal.addOnList.isEmpty) {
+                                        return Container();
+                                      }
+                                      return Consumer(
+                                        builder: (context, CartViewModel model, _) {
+                                          CartModel? cart = model.containsService(data);
+                                          return Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              UIHelper.verticalSpaceSmall,
+                                              Text(strings.get(93), style: theme.style12W800),
+                                              UIHelper.verticalSpaceSmall,
+                                              Wrap(
+                                                runSpacing: 12,
+                                                spacing: 12,
+                                                children: modal.addOnList.map((data2) {
+                                                  var cartAd =
+                                                      model.containsAdditionalService(data, data2);
+
+                                                  return SizedBox(
+                                                    width: width,
+                                                    child: Column(
+                                                      children: [
+                                                        _buildAddOnView(
+                                                          data2,
+                                                          width: width,
+                                                          onTap: () {
+                                                            if (cartAd != null) {
+                                                              model.removeAddOnServiceToCart(
+                                                                  cart!, cartAd);
+                                                            } else {
+                                                              model.addAddOnServiceToCart(
+                                                                  data, data2);
+                                                            }
+                                                          },
+                                                          isActive: cartAd != null,
+                                                        ),
+                                                        if (cartAd != null)
+                                                          UIHelper.verticalSpaceSmall,
+                                                        if (cartAd != null)
+                                                          buildQuantityView(
+                                                            cartAd.quantity,
+                                                            onIncrement: () {
+                                                              model.increaseAdditionalServiceQty(
+                                                                  cart!, cartAd);
+                                                            },
+                                                            onDecrement: () {
+                                                              model.decreaseAdditionalServiceQty(
+                                                                  cart!, cartAd);
+                                                            },
+                                                          ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  UIHelper.verticalSpaceMedium,
                                 ],
                               ),
-                            );
-                          }).toList(),
+                            ),
+                          ],
                         ),
-                      ],
-                    );
-                  },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
+                      child: button2s(
+                        "Done",
+                        theme.style14W800W,
+                        primaryColor,
+                        10,
+                        () {
+                          Navigator.of(context).pop();
+                        },
+                        true,
+                      ),
+                    ),
+                  ],
                 );
               },
-            ),
-            UIHelper.verticalSpaceMedium,
-            Row(
-              children: [
-                Text(strings.get(95),
-
-                    /// "Total amount",
-                    style: theme.style12W800),
-                const SizedBox(
-                  width: 10,
-                ),
-                ValueListenableBuilder(
-                  valueListenable: totalNfy,
-                  builder: (context, val, _) {
-                    return Text("₹ $val", style: theme.style13W800Red);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: button134(
-                    strings.get(32),
-                    () {
-                      // currentProvider = provider[0];
-                      // _openProvider();
-                    },
-                    true,
-                    theme.style14W800MainColor,
-                  ),
-                ),
-
-                /// "Provider",
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                  flex: 3,
-                  child: button2s(
-                      strings.get(94),
-
-                      /// "Add to cart",
-                      theme.style14W800W,
-                      primaryColor,
-                      10, () {
-                    // _close();
-                  }, true),
-                )
-              ],
-            ),
-          ],
-        );
-      },
+            );
+          }),
     );
   }
 
@@ -497,13 +691,8 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
     );
   }
 
-  buildQuantityView(
-    int value, {
-    VoidCallback? onIncrement,
-    VoidCallback? onDecrement,
-    int min = 1,
-    int? max,
-  }) {
+  buildQuantityView(int value,
+      {VoidCallback? onIncrement, VoidCallback? onDecrement, int min = 1, int? max}) {
     bool decStat = value > min;
     bool incStat = max != null ? value < max : true;
     return Row(

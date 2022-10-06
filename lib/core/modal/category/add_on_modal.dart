@@ -3,12 +3,13 @@ class AddOnModal {
   int categoryId;
   int subCategoryId;
   int childCategoryId;
+  int serviceId;
   String name;
+  String description;
   int price;
   String image;
   String imageUrl;
   String status;
-  int quantity;
   DateTime createdAt;
   DateTime updatedAt;
 
@@ -18,11 +19,12 @@ class AddOnModal {
         categoryId = json["category_id"],
         subCategoryId = json["sub_category_id"],
         childCategoryId = json["child_category_id"],
+        serviceId = json["service_id"],
         price = json["price"],
         image = json["image"] ?? "",
         imageUrl = json["image_url"] ?? "",
+        description = json["description"] ?? "",
         status = json["status"],
-        quantity = 1,
         createdAt = DateTime.parse(json["created_at"]),
         updatedAt = DateTime.parse(json["updated_at"]);
 

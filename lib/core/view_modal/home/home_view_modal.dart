@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:socspl/core/enum/api_status.dart';
 import 'package:socspl/core/modal/banner/promo_banner.dart';
 import 'package:socspl/core/modal/category/add_on_modal.dart';
+import 'package:socspl/core/modal/category/rate_card_model.dart';
 import 'package:socspl/core/modal/category/sub_category_modal.dart';
 import 'package:socspl/core/modal/category/trending_category_modal.dart';
 import 'package:socspl/core/modal/city_modal.dart';
@@ -25,6 +26,7 @@ import '../../modal/category/category_banner_modal.dart';
 import '../../modal/category/category_modal.dart';
 import '../../modal/category/child_category_modal.dart';
 import '../../modal/response_modal.dart';
+import '../../utils/storage/storage.dart';
 
 class HomeViewModal extends BaseViewModal with PermissionHandlerService {
   CategoryService categoryService = CategoryService();
@@ -55,6 +57,8 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
 
   List<SectionModal> sections = [];
 
+  List<RateCardModel> rateCards = [];
+
   late CategoryBannerModal categoryBanner;
 
   List<TrendingCategoryModal> trendingCategories = [];
@@ -73,7 +77,16 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
 
   initHomeModule({bool initLocation = true}) async {
     setBusy(true);
-    if (initLocation) await myCurrentLocation();
+    final pref = Storage.instance;
+    print(pref.address);
+    print(pref.city);
+    if (pref.address == null) {
+      if (initLocation) await myCurrentLocation();
+    } else {
+      currentAddress = pref.address!;
+      currentLatLng = pref.latLng;
+      await checkCityAvailability(pref.city!, notify: false);
+    }
 
     final res = await bannerService.fetchAllBanner("${city?.id ?? ""}");
     if (res.status == ApiStatus.success) {
@@ -152,7 +165,7 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
   }
 
   fetchChildCategoryModal(String categoryId, String subCategoryId, {String search = ""}) async {
-    setBusy(true);
+    // setBusy(true);
     final res = await categoryService.fetchChildCategoryById(
       categoryId,
       subCategoryId,
@@ -163,13 +176,14 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       childCategories.clear();
       childCategories.addAll(res.data!);
     }
-    busy = false;
+    // busy = false;
     notifyListeners();
   }
 
-  fetchAllServicesByCategoryIds(String categoryId, String subCategoryId, String childCategoryId,
-      {String search = ""}) async {
-    setBusy(true);
+  Future<void> fetchAllServicesByCategoryIds(String categoryId, String subCategoryId,
+      {String childCategoryId = "", String search = ""}) async {
+    // setBusy(true);
+    categoryServices.clear();
     final res = await categoryService.fetchAllServicesByCategoryIds(
       categoryId,
       subCategoryId,
@@ -178,10 +192,9 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       search: search,
     );
     if (res.status == ApiStatus.success) {
-      categoryServices.clear();
       categoryServices.addAll(res.data!);
     }
-    busy = false;
+    // busy = false;
     notifyListeners();
   }
 
@@ -193,9 +206,9 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
     );
     if (res.status == ApiStatus.success) {
       serviceModal = res.data;
+      addOnList = serviceModal?.addOns ?? [];
     }
     busy = false;
-    notifyListeners();
   }
 
   Future<void> fetchAddOnModal(int childCategoryId, {String search = ""}) async {
@@ -209,7 +222,6 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       addOnList.addAll(res.data!);
     }
     busy = false;
-    notifyListeners();
   }
 
   Future<void> fetchSections({String search = ""}) async {
@@ -220,7 +232,14 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       sections.addAll(res.data!);
     }
     busy = false;
-    notifyListeners();
+  }
+
+  Future<void> fetchRateCard(int childCategoryId) async {
+    final res = await categoryService.fetchRateCard(childCategoryId);
+    if (res.status == ApiStatus.success) {
+      rateCards.clear();
+      rateCards.addAll(res.data!);
+    }
   }
 
   Future<void> fetchLocation(LatLng latLng, {bool notify = false}) async {
@@ -232,7 +251,7 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       print(res.data!.locality);
       final city = await checkCityAvailability(res.data!.locality, notify: false);
       if (city == null) {
-        checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
+        await checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
       }
     }
   }
@@ -268,6 +287,25 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
 
     Position position = await Geolocator.getCurrentPosition();
     await fetchLocation(LatLng(position.latitude, position.longitude), notify: false);
+    if (city != null) {
+      Storage.instance.setLocation(
+        latLng: currentLatLng,
+        address: currentAddress,
+        city: city!,
+      );
+    }
+  }
+
+  Future<Position> currentLocation() async {
+    await _checkLocationPermission();
+    bool serviceEnabled;
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 
   Future<ResponseModal<GeocodeAddress>> fetchAddressFromGeocode(LatLng latLng) async {

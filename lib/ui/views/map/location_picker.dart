@@ -14,6 +14,7 @@ import 'package:socspl/ui/shared/ui_helpers.dart';
 import 'package:socspl/ui/widgets/buttons/button134.dart';
 
 import '../../../core/constance/style.dart';
+import '../../../core/utils/storage/storage.dart';
 
 class LocationPickerView extends StatefulWidget {
   const LocationPickerView({Key? key}) : super(key: key);
@@ -222,10 +223,27 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                         "Confirm Location",
                         () {
                           final modal = context.read<HomeViewModal>();
-                          modal.currentAddress = _addressNfy.value;
-                          modal.currentLatLng = _currentLatLng;
-                          modal.initHomeModule(initLocation: false);
-                          Navigation.instance.goBack();
+                          if (modal.city != null) {
+                            modal.currentAddress = _addressNfy.value;
+                            modal.currentLatLng = _currentLatLng;
+                            Storage.instance.setLocation(
+                              latLng: _currentLatLng,
+                              address: _addressNfy.value,
+                              city: modal.city!,
+                            );
+                            modal.initHomeModule(initLocation: false);
+                            Navigation.instance.goBack();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Currently, our service is not available in this area.",
+                                  style: TextStyle(fontFamily: "Montserrat"),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         },
                         true,
                         const TextStyle(

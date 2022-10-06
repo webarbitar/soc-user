@@ -12,6 +12,7 @@ import '../../../core/constance/provider.dart';
 import '../../../core/constance/strings.dart';
 import '../../../core/constance/style.dart';
 import '../../../core/modal/service.dart';
+import '../../../core/utils/storage/storage.dart';
 import '../../shared/androidBackButton.dart';
 import '../../shared/messenger/util.dart';
 import '../../widgets/bottom/bottom13.dart';
@@ -88,9 +89,11 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
     windowHeight = MediaQuery.of(context).size.height;
     windowSize = min(windowWidth, windowHeight);
 
+    print(Storage.instance.token);
     return AnnotatedRegion(
       value: SystemUiOverlayStyle(
         statusBarColor: Theme.of(context).scaffoldBackgroundColor,
+        statusBarIconBrightness: Brightness.dark,
       ),
       child: WillPopScope(
         onWillPop: () async {
@@ -358,7 +361,6 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    Position position = await Geolocator.getCurrentPosition();
-    modal.fetchLocation(LatLng(position.latitude, position.longitude), notify: mounted);
+    // Position position = await Geolocator.getCurrentPosition();
   }
 }

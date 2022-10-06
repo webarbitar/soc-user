@@ -53,44 +53,47 @@ button202z(
                 flex: 2,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(radius),
-                  child: SizedBox(
-                      width: width,
-                      child: Stack(
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: image,
-                            width: width,
-                            imageBuilder: (context, imageProvider) => Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                image: imageProvider,
-                                fit: BoxFit.cover,
-                              )),
-                            ),
-                            errorWidget: (context, url, error) {
-                              return Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: SizedBox(
+                        width: width,
+                        child: Stack(
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: image,
+                              width: width,
+                              imageBuilder: (context, imageProvider) => Container(
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  color: Colors.grey.shade100,
-                                ),
-                                child: const Center(
-                                  child: Text("No image"),
-                                ),
-                              );
-                            },
-                          ),
-                          if (unavailable)
-                            Container(
-                              color: Colors.black.withAlpha(50),
-                              child: Center(
-                                  child: Text(
-                                strings.get(30),
-                                style: theme.style10W800White,
-                                textAlign: TextAlign.center,
-                              )),
-                            )
-                        ],
-                      )),
+                                    image: DecorationImage(
+                                  image: imageProvider,
+                                  fit: BoxFit.cover,
+                                )),
+                              ),
+                              errorWidget: (context, url, error) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.grey.shade100,
+                                  ),
+                                  child: const Center(
+                                    child: Text("No image"),
+                                  ),
+                                );
+                              },
+                            ),
+                            if (unavailable)
+                              Container(
+                                color: Colors.black.withAlpha(50),
+                                child: Center(
+                                    child: Text(
+                                  strings.get(30),
+                                  style: theme.style10W800White,
+                                  textAlign: TextAlign.center,
+                                )),
+                              )
+                          ],
+                        )),
+                  ),
                 ),
               ),
               Expanded(

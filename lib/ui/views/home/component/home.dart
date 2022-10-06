@@ -15,6 +15,7 @@ import '../../../shared/ui_helpers.dart';
 import '../../../widgets/buttons/button134.dart';
 import '../../../widgets/edit26.dart';
 import '../../../widgets/ibanner.dart';
+import '../../service/service_view.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(String) callback;
@@ -278,84 +279,90 @@ class _HomeScreenState extends State<HomeScreen> {
                       return SliverList(
                         delegate: SliverChildListDelegate(
                           [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (modal.banners.isNotEmpty) UIHelper.verticalSpaceSmall,
-                                if (modal.banners.isNotEmpty)
-                                  Center(
-                                    child: IBanner(
-                                      modal.banners,
-                                      width: constraints.crossAxisExtent,
-                                      height: constraints.crossAxisExtent * 0.45,
-                                      colorActive: primaryColor,
-                                      colorProgressBar: primaryColor,
-                                      radius: 6,
-                                      shadow: 0,
-                                      style: theme.style16W400,
-                                      callback: (String id, String heroId, String image) {},
-                                      seconds: 3,
+                            GestureDetector(
+                              onTap: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (modal.banners.isNotEmpty) UIHelper.verticalSpaceSmall,
+                                  if (modal.banners.isNotEmpty)
+                                    Center(
+                                      child: IBanner(
+                                        modal.banners,
+                                        width: constraints.crossAxisExtent,
+                                        height: constraints.crossAxisExtent * 0.45,
+                                        colorActive: primaryColor,
+                                        colorProgressBar: primaryColor,
+                                        radius: 6,
+                                        shadow: 0,
+                                        style: theme.style16W400,
+                                        callback: (String id, String heroId, String image) {},
+                                        seconds: 3,
+                                      ),
                                     ),
+                                  UIHelper.verticalSpaceMedium,
+                                  UIHelper.verticalSpaceSmall,
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 10, right: 10),
+                                    child: _horizontalCategories(),
                                   ),
-                                UIHelper.verticalSpaceMedium,
-                                UIHelper.verticalSpaceSmall,
-                                Container(
-                                  margin: const EdgeInsets.only(left: 10, right: 10),
-                                  child: _horizontalCategories(),
-                                ),
-                                UIHelper.verticalSpaceMedium,
-                                UIHelper.verticalSpaceMedium,
-                                if (modal.offerBanners.isNotEmpty)
-                                  Center(
-                                    child: PromoBanner(
-                                      modal.offerBanners,
-                                      width: constraints.crossAxisExtent,
-                                      height: constraints.crossAxisExtent * 0.45,
-                                      colorActive: primaryColor,
-                                      colorProgressBar: primaryColor,
-                                      radius: 6,
-                                      shadow: 0,
-                                      style: theme.style16W400,
-                                      callback: (String id, String heroId, String image) {},
-                                      seconds: 3,
+                                  if (modal.offerBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
+                                  if (modal.offerBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
+                                  if (modal.offerBanners.isNotEmpty)
+                                    Center(
+                                      child: PromoBanner(
+                                        modal.offerBanners,
+                                        width: constraints.crossAxisExtent,
+                                        height: constraints.crossAxisExtent * 0.45,
+                                        colorActive: primaryColor,
+                                        colorProgressBar: primaryColor,
+                                        radius: 6,
+                                        shadow: 0,
+                                        style: theme.style16W400,
+                                        callback: (String id, String heroId, String image) {},
+                                        seconds: 3,
+                                      ),
                                     ),
+                                  // ...modal.offerBanners.map((data) {
+                                  //   return CachedNetworkImage(imageUrl: data.imageUrl);
+                                  // }),
+                                  UIHelper.verticalSpaceMedium,
+                                  UIHelper.verticalSpaceMedium,
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 10, right: 10),
+                                    child: _trendingCategories(),
                                   ),
-                                // ...modal.offerBanners.map((data) {
-                                //   return CachedNetworkImage(imageUrl: data.imageUrl);
-                                // }),
-                                UIHelper.verticalSpaceSmall,
-                                Container(
-                                  margin: const EdgeInsets.only(left: 10, right: 10),
-                                  child: _trendingCategories(),
-                                ),
-                                UIHelper.verticalSpaceMedium,
-                                UIHelper.verticalSpaceMedium,
-                                if (modal.workBanners.isNotEmpty)
-                                  Center(
-                                    child: PromoBanner(
-                                      modal.workBanners,
-                                      width: constraints.crossAxisExtent,
-                                      height: constraints.crossAxisExtent * 0.45,
-                                      colorActive: primaryColor,
-                                      colorProgressBar: primaryColor,
-                                      radius: 6,
-                                      shadow: 0,
-                                      style: theme.style16W400,
-                                      callback: (String id, String heroId, String image) {},
-                                      seconds: 3,
+                                  if (modal.workBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
+                                  if (modal.workBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
+                                  if (modal.workBanners.isNotEmpty)
+                                    Center(
+                                      child: PromoBanner(
+                                        modal.workBanners,
+                                        width: constraints.crossAxisExtent,
+                                        height: constraints.crossAxisExtent * 0.45,
+                                        colorActive: primaryColor,
+                                        colorProgressBar: primaryColor,
+                                        radius: 6,
+                                        shadow: 0,
+                                        style: theme.style16W400,
+                                        callback: (String id, String heroId, String image) {},
+                                        seconds: 3,
+                                      ),
                                     ),
+                                  // ...modal.workBanners.map((data) {
+                                  //   return CachedNetworkImage(imageUrl: data.imageUrl);
+                                  // }),
+                                  UIHelper.verticalSpaceMedium,
+                                  UIHelper.verticalSpaceMedium,
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 10, right: 10),
+                                    child: _buildSectionView(),
                                   ),
-                                // ...modal.workBanners.map((data) {
-                                //   return CachedNetworkImage(imageUrl: data.imageUrl);
-                                // }),
-                                UIHelper.verticalSpaceMedium,
-                                UIHelper.verticalSpaceMedium,
-                                Container(
-                                  margin: const EdgeInsets.only(left: 10, right: 10),
-                                  child: _buildSectionView(),
-                                ),
-                                UIHelper.verticalSpaceLarge,
-                              ],
+                                  UIHelper.verticalSpaceLarge,
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -393,14 +400,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(5),
                       child: Container(
+                        padding: const EdgeInsets.all(8),
                         decoration: const BoxDecoration(
                           color: highlightColor,
                           borderRadius: BorderRadius.all(
-                            Radius.circular(4),
+                            Radius.circular(6),
                           ),
                         ),
                         width: width,
-                        height: 90,
+                        height: 80,
                         child: CachedNetworkImage(
                           imageUrl: data.imageUrl,
                         ),
@@ -438,30 +446,33 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       builder: (context) {
-        return Padding(
+        return SingleChildScrollView(
           padding: const EdgeInsets.all(14.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.close),
-                ),
-              ),
-              Text(
-                category.name,
-                style: const TextStyle(
-                    fontFamily: "Montserrat",
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.4,
-                    height: 1.4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    category.name,
+                    style: const TextStyle(
+                        fontFamily: "Montserrat",
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.4,
+                        height: 1.4),
+                  ),
+                  UIHelper.horizontalSpaceMedium,
+                  IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
               ),
               UIHelper.verticalSpaceMedium,
               UIHelper.verticalSpaceSmall,
@@ -476,13 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       final width = (constraints.maxWidth / 3) - 8;
                       return InkWell(
                         onTap: () {
-                          model.selectedSubCategory = data.name;
-                          Navigation.instance.navigateWidget(
-                            ChildCategoryView(
-                              categoryId: category.id,
-                              subCategoryId: data.id,
-                            ),
-                          );
+                          Navigation.instance.navigate("/sub-category", args: data);
                         },
                         child: SizedBox(
                           width: width,
@@ -498,10 +503,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   width: width,
-                                  height: 70,
+                                  height: 80,
                                   child: CachedNetworkImage(
                                     imageUrl: data.imageUrl,
-                                    fit: BoxFit.fitHeight,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
@@ -552,78 +557,100 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(cate.name, style: theme.style14W800),
                           Text(
-                            cate.description,
-                            style: theme.style11W600Grey,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            cate.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: "Montserrat",
+                              height: 1.4,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
+                          if (cate.description.isNotEmpty) const SizedBox(height: 6),
+                          if (cate.description.isNotEmpty)
+                            Text(
+                              cate.description,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                         ],
                       ),
                     ),
-                    button134(
-                      strings.get(26),
-                      () {
-                        // modal.selectedCategory = data.name;
-                        // Navigation.instance.navigate("/sub-category", args: data);
-                      },
-                      true,
-                      theme.style14W800MainColor,
-                    )
+                    UIHelper.horizontalSpaceSmall,
+                    // button134(
+                    //   strings.get(26),
+                    //   () {
+                    //     // modal.selectedCategory = cate.name;
+                    //     // Navigation.instance.navigate("/sub-category", args: cate);
+                    //   },
+                    //   true,
+                    //   theme.style14W800MainColor,
+                    // )
                   ],
                 ),
-                UIHelper.verticalSpaceSmall,
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 16,
-                  // crossAxisAlignment: WrapCrossAlignment.start,
-                  alignment: WrapAlignment.start,
-                  children: modal.trendingCategories.map((data) {
-                    final width = (constraints.maxWidth / 3) - 8;
-                    return InkWell(
-                      onTap: () {
-                        _subCategoryModalView(data);
-                      },
-                      child: SizedBox(
-                        width: width,
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(5),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: highlightColor,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(4),
+                UIHelper.horizontalSpaceSmall,
+                const Divider(),
+                UIHelper.horizontalSpaceSmall,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    // crossAxisAlignment: WrapCrossAlignment.start,
+                    alignment: WrapAlignment.start,
+                    children: cate.subCategories.map((data) {
+                      final width = (constraints.maxWidth / 3) - 8;
+                      return InkWell(
+                        onTap: () {
+                          modal.selectedSubCategory = data.name;
+                          Navigation.instance.navigate("/sub-category", args: data);
+                        },
+                        child: SizedBox(
+                          width: width,
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(5),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: highlightColor,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(4),
+                                    ),
+                                  ),
+                                  width: width,
+                                  height: 90,
+                                  child: CachedNetworkImage(
+                                    imageUrl: data.imageUrl,
+                                    fit: BoxFit.fitHeight,
                                   ),
                                 ),
-                                width: width,
-                                height: 90,
-                                child: CachedNetworkImage(
-                                  imageUrl: data.imageUrl,
-                                  fit: BoxFit.fitHeight,
+                              ),
+                              UIHelper.verticalSpaceSmall,
+                              Text(
+                                data.name,
+                                style: const TextStyle(
+                                  fontFamily: "Montserrat",
+                                  letterSpacing: 0.4,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black,
                                 ),
-                              ),
-                            ),
-                            UIHelper.verticalSpaceSmall,
-                            Text(
-                              data.name,
-                              style: const TextStyle(
-                                fontFamily: "Montserrat",
-                                letterSpacing: 0.4,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.center,
-                            )
-                          ],
+                                textAlign: TextAlign.center,
+                              )
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
+                UIHelper.verticalSpaceMedium,
+                UIHelper.verticalSpaceSmall,
               ],
             );
           },
@@ -692,6 +719,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               //     ),
                               //   ),
                               // );
+
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => ServiceView(
+                                    categoryId: serv.categoryId,
+                                  ),
+                                ),
+                              );
                             },
                             child: Container(
                               width: constraints.maxWidth * 0.40,

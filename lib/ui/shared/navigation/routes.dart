@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:socspl/ui/views/auth/login_page_view.dart';
 import 'package:socspl/ui/views/auth/otp_view.dart';
 import 'package:socspl/ui/views/auth/signup_page_view.dart';
+import 'package:socspl/ui/views/booking/booking_address_view.dart' ;
+import 'package:socspl/ui/views/cart/cart_view.dart';
 import 'package:socspl/ui/views/category/sub_category/sub_category_view.dart';
 import 'package:socspl/ui/views/home/home_view.dart';
 import 'package:socspl/ui/views/landing_page_view.dart';
@@ -9,6 +11,7 @@ import 'package:socspl/ui/views/search_page.dart';
 import 'package:socspl/ui/views/splash_screen_view.dart';
 import 'package:socspl/ui/widgets/dialogs/loading_dialog.dart';
 import '../../../core/modal/category/category_modal.dart';
+import '../../../core/modal/category/sub_category_modal.dart';
 import '../../views/map/location_picker.dart';
 import 'fade_transition_route.dart';
 
@@ -21,7 +24,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     /// User Authentication Routes
     ///
     case '/login':
-      return FadeTransitionPageRouteBuilder(page: const LoginPageView());
+      return FadeTransitionPageRouteBuilder(
+        page: LoginPageView(skip: (settings.arguments ?? true) as bool),
+      );
     case '/signup':
       return FadeTransitionPageRouteBuilder(page: const SignupPageView());
 
@@ -35,7 +40,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return FadeTransitionPageRouteBuilder(page: const HomeView());
     case '/sub-category':
       return FadeTransitionPageRouteBuilder(
-        page: SubCategoryView(category: settings.arguments as CategoryModal),
+        page: SubCategoryView(category: settings.arguments as SubCategoryModal),
       );
 
     case '/pick-location':
@@ -53,6 +58,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case '/loadingDialog':
       return FadeTransitionPageRouteBuilder(page: LoadingDialog());
+
+    ///
+    /// Cart page routes
+    ///
+    case '/cart':
+      return FadeTransitionPageRouteBuilder(page: const CartView());
+
+    ///
+    /// Booking page routes
+    ///
+    case '/booking-address':
+      return FadeTransitionPageRouteBuilder(page: const BookingAddressView());
 
     default:
       return MaterialPageRoute(builder: (_) {
