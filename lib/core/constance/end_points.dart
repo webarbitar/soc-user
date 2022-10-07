@@ -30,8 +30,14 @@ const rateCard = "$baseUrl/rate_cards";
 ///  ======== Section Url ========
 const section = "$baseUrl/sections";
 
+///  ======== Timeslot Url ========
+const timeslot = "$baseUrl/time_slots";
+
 ///  ======== Section Url ========
 const booking = "$baseUrl/book_service";
+const pendingBooking = "$baseUrl/pending_booking_list";
+const confirmedBooking = "$baseUrl/confirmed_booking_list";
+const completedBooking = "$baseUrl/completed_booking_list";
 
 ///  ======== Google Map Url ========
 const mapGecode = "$mapBaseUrl/geocode/json";

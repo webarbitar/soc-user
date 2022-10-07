@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:socspl/core/enum/api_status.dart';
 import 'package:socspl/core/modal/address/user_address_model.dart';
 import 'package:socspl/core/utils/string_extension.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/core/view_modal/cart/cart_view_model.dart';
 import 'package:socspl/core/view_modal/user/user_view_model.dart';
 import 'package:socspl/ui/shared/ui_helpers.dart';
+import 'package:socspl/ui/views/auth/login_page_view.dart';
 import 'package:socspl/ui/widgets/custom/custom_button.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
@@ -33,6 +35,18 @@ class _CartViewState extends State<CartView> {
     final model = context.read<UserViewModel>();
     final res = model.fetchAddresses();
     res.then((value) {
+      if (value.status == ApiStatus.unauthorized) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Session expired",
+              style: TextStyle(fontFamily: "Montserrat"),
+            ),
+          ),
+        );
+        Storage.instance.logout();
+        Navigation.instance.navigate("/login", args: const CartView());
+      }
       _busyNfy.value = false;
     });
   }
@@ -55,7 +69,7 @@ class _CartViewState extends State<CartView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       UIHelper.verticalSpaceMedium,
-                      ...model.carts.map(
+                      ...model.currentCart.items.map(
                         (data) {
                           return Column(
                             children: [
@@ -78,7 +92,7 @@ class _CartViewState extends State<CartView> {
                                             ),
                                           ),
                                           UIHelper.verticalSpaceMedium,
-                                          ...data.additionalServices.map((el) {
+                                          ...data.additionalItem.map((el) {
                                             return Row(
                                               children: [
                                                 const Icon(Icons.circle,
@@ -105,89 +119,56 @@ class _CartViewState extends State<CartView> {
                                       width: 70,
                                       child: Consumer<CartViewModel>(
                                         builder: (context, CartViewModel model, _) {
-                                          CartModel? cart = model.containsService(data.service);
-                                          if (cart != null) {
-                                            return Material(
-                                              elevation: 2.0,
-                                              borderRadius: BorderRadius.circular(4),
-                                              color: Theme.of(context).primaryColor,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(2.0),
-                                                child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    InkWell(
-                                                      onTap: () {
-                                                        if (cart.additionalServices.isNotEmpty) {
-                                                        } else {
-                                                          model.increaseServiceQty(cart);
-                                                        }
-                                                      },
-                                                      child: const Icon(
-                                                        Icons.add,
+                                          CartItem cart = model.containsService(data.service)!;
+                                          return Material(
+                                            elevation: 2.0,
+                                            borderRadius: BorderRadius.circular(4),
+                                            color: Theme.of(context).primaryColor,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(2.0),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  InkWell(
+                                                    onTap: () {
+                                                      if (cart.additionalItem.isNotEmpty) {
+                                                        showServiceModalView(data.service);
+                                                      } else {
+                                                        model.decreaseServiceQty(cart);
+                                                      }
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.remove,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  Flexible(
+                                                    child: Text(
+                                                      "${cart.totalQuantity}",
+                                                      style: const TextStyle(
                                                         color: Colors.white,
+                                                        fontWeight: FontWeight.w600,
                                                       ),
+                                                      softWrap: false,
+                                                      overflow: TextOverflow.clip,
                                                     ),
-                                                    Flexible(
-                                                      child: Text(
-                                                        "${cart.totalQuantity}",
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontWeight: FontWeight.w600,
-                                                        ),
-                                                        softWrap: false,
-                                                        overflow: TextOverflow.clip,
-                                                      ),
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      if (cart.additionalItem.isNotEmpty) {
+                                                      } else {
+                                                        model.increaseServiceQty(cart);
+                                                      }
+                                                    },
+                                                    child: const Icon(
+                                                      Icons.add,
+                                                      color: Colors.white,
                                                     ),
-                                                    InkWell(
-                                                      onTap: () {
-                                                        if (cart.additionalServices.isNotEmpty) {
-                                                          showServiceModalView(data.service);
-                                                        } else {
-                                                          model.decreaseServiceQty(cart);
-                                                        }
-                                                      },
-                                                      child: const Icon(
-                                                        Icons.remove,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
-                                            );
-                                          } else {
-                                            return ElevatedButton(
-                                              onPressed: () {
-                                                if (Storage.instance.isLogin) {
-                                                  if (cart != null) {
-                                                    model.increaseServiceQty(cart);
-                                                  } else {
-                                                    var price = 0;
-                                                    if (data.service.prices.isNotEmpty) {
-                                                      price = data.service.prices.first.price;
-                                                    }
-                                                    model.addServiceToCart(
-                                                      CartModel(
-                                                        service: data.service,
-                                                        quantity: 1,
-                                                        totalPrice: price,
-                                                      ),
-                                                    );
-                                                  }
-                                                } else {
-                                                  Navigation.instance
-                                                      .navigate("/login", args: false);
-                                                }
-                                              },
-                                              child: const Text(
-                                                "Add",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            );
-                                          }
+                                            ),
+                                          );
                                         },
                                       ),
                                     ),
@@ -238,7 +219,7 @@ class _CartViewState extends State<CartView> {
                                 ),
                                 UIHelper.horizontalSpaceMedium,
                                 Text(
-                                  "₹ ${model.getTotalPrice()}",
+                                  "₹ ${model.totalPrice}",
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -290,7 +271,7 @@ class _CartViewState extends State<CartView> {
                                 ),
                                 UIHelper.horizontalSpaceMedium,
                                 Text(
-                                  "₹ ${model.getTotalPrice()}",
+                                  "₹ ${model.totalPrice}",
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -353,7 +334,10 @@ class _CartViewState extends State<CartView> {
         maxWidth: double.maxFinite,
       ),
       builder: (context) {
-        return AddOnViewWidget(data: data);
+        return AddOnViewWidget(
+          data: data,
+          redirectRoute: const CartView(),
+        );
       },
     );
   }

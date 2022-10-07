@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:socspl/ui/views/auth/login_page_view.dart';
 import 'package:socspl/ui/views/auth/otp_view.dart';
 import 'package:socspl/ui/views/auth/signup_page_view.dart';
-import 'package:socspl/ui/views/booking/booking_address_view.dart' ;
+import 'package:socspl/ui/views/booking/booking_address_view.dart';
 import 'package:socspl/ui/views/cart/cart_view.dart';
 import 'package:socspl/ui/views/category/sub_category/sub_category_view.dart';
 import 'package:socspl/ui/views/home/home_view.dart';
@@ -25,13 +25,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     ///
     case '/login':
       return FadeTransitionPageRouteBuilder(
-        page: LoginPageView(skip: (settings.arguments ?? true) as bool),
+        page: LoginPageView(redirectRoute: settings.arguments as Widget?),
       );
     case '/signup':
       return FadeTransitionPageRouteBuilder(page: const SignupPageView());
 
     case '/otp':
-      return FadeTransitionPageRouteBuilder(page: OtpView());
+      return FadeTransitionPageRouteBuilder(
+        page: OtpView(
+          redirectRoute: settings.arguments as Widget?,
+        ),
+      );
 
     ///
     /// Home page routes

@@ -1,3 +1,5 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 class UserAddressModel {
   int id;
   int userId;
@@ -8,6 +10,7 @@ class UserAddressModel {
   String landmark;
   String pinCode;
   int cityId;
+  LatLng latLng;
   String type;
   String status;
   String createdAt;
@@ -20,6 +23,7 @@ class UserAddressModel {
       required this.area,
       required this.landmark,
       required this.pinCode,
+      required this.latLng,
       required this.cityId,
       required this.type})
       : id = 0,
@@ -40,6 +44,8 @@ class UserAddressModel {
         landmark = json['landmark'],
         pinCode = json['pincode'],
         cityId = json['city_id'],
+        latLng =
+            LatLng((json['latitude'] ?? 0.0).toDouble(), (json['longitude'] ?? 0.0).toDouble()),
         type = json['type'],
         status = json['status'],
         createdAt = json['created_at'],
@@ -64,6 +70,8 @@ class UserAddressModel {
     data['area'] = area;
     data['landmark'] = landmark;
     data['pincode'] = pinCode;
+    data["latitude"] = "${latLng.latitude}";
+    data["longitude"] = "${latLng.longitude}";
     data['city_id'] = cityId.toString();
     data['type'] = type;
     return data;

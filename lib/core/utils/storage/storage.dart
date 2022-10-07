@@ -43,6 +43,6 @@ class Storage {
 
   Future<void> logout() async {
     await pref.setBool("isLoggedIn", false);
-    pref.clear();
+    await pref.remove(token);
   }
 }

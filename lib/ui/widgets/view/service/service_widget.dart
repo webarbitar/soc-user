@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:socspl/core/modal/cart/cart_model.dart';
-import 'package:socspl/core/modal/section/section_modal.dart';
-import 'package:socspl/core/modal/service/category_service_modal.dart';
-import 'package:socspl/core/utils/storage/storage.dart';
-import 'package:socspl/core/view_modal/cart/cart_view_model.dart';
-import 'package:socspl/ui/shared/divider/dotted_divider.dart';
-import 'package:socspl/ui/shared/navigation/navigation.dart';
-import 'package:socspl/ui/shared/ui_helpers.dart';
 
-import '../../../../core/constance/strings.dart';
+import '../../../../core/modal/cart/cart_model.dart';
+import '../../../../core/modal/service/category_service_modal.dart';
+import '../../../../core/utils/storage/storage.dart';
+import '../../../../core/view_modal/cart/cart_view_model.dart';
+import '../../../shared/divider/dotted_divider.dart';
+import '../../../shared/navigation/navigation.dart';
+import '../../../shared/ui_helpers.dart';
 
 class ServiceWidget extends StatelessWidget {
   final CategoryServiceModal data;
   final VoidCallback onTap;
+  final Widget redirectRoute;
 
-  const ServiceWidget({Key? key, required this.data, required this.onTap}) : super(key: key);
+  const ServiceWidget(
+      {Key? key, required this.data, required this.onTap, required this.redirectRoute})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -114,10 +115,25 @@ class ServiceWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     color: Colors.grey.shade200,
-                    child: CachedNetworkImage(
-                      imageUrl: data.imageUrl,
-                      width: 130,
-                    ),
+                    child: data.imageUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: data.imageUrl,
+                            width: 130,
+                          )
+                        : const SizedBox(
+                            width: 130,
+                            height: 90,
+                            child: Center(
+                              child: Text(
+                                "No image",
+                                style: TextStyle(
+                                  fontFamily: "Montserrat",
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -127,7 +143,7 @@ class ServiceWidget extends StatelessWidget {
                 right: 30,
                 child: Consumer<CartViewModel>(
                   builder: (context, CartViewModel model, _) {
-                    CartModel? cart = model.containsService(data);
+                    CartItem? cart = model.containsService(data);
                     if (cart != null) {
                       return Material(
                         elevation: 2.0,
@@ -142,14 +158,14 @@ class ServiceWidget extends StatelessWidget {
                               children: [
                                 InkWell(
                                   onTap: () {
-                                    if (cart.additionalServices.isNotEmpty) {
+                                    if (cart.additionalItem.isNotEmpty) {
                                       onTap();
                                     } else {
-                                      model.increaseServiceQty(cart);
+                                      model.decreaseServiceQty(cart);
                                     }
                                   },
                                   child: const Icon(
-                                    Icons.add,
+                                    Icons.remove,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -166,14 +182,14 @@ class ServiceWidget extends StatelessWidget {
                                 ),
                                 InkWell(
                                   onTap: () {
-                                    if (cart.additionalServices.isNotEmpty) {
+                                    if (cart.additionalItem.isNotEmpty) {
                                       onTap();
                                     } else {
-                                      model.decreaseServiceQty(cart);
+                                      model.increaseServiceQty(cart);
                                     }
                                   },
                                   child: const Icon(
-                                    Icons.remove,
+                                    Icons.add,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -196,7 +212,7 @@ class ServiceWidget extends StatelessWidget {
                                   price = data.prices.first.price;
                                 }
                                 model.addServiceToCart(
-                                  CartModel(
+                                  CartItem(
                                     service: data,
                                     quantity: 1,
                                     totalPrice: price,
@@ -204,7 +220,7 @@ class ServiceWidget extends StatelessWidget {
                                 );
                               }
                             } else {
-                              Navigation.instance.navigate("/login", args: false);
+                              Navigation.instance.navigate("/login", args: redirectRoute);
                             }
                           },
                           child: const Text(

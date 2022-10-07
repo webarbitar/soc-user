@@ -122,6 +122,7 @@ class UserService with ServiceMixin {
 
   Future<ResponseModal<UserAddressModel>> addAddress(Map<String, String> data) async {
     var request = http.MultipartRequest('POST', parseUri("$address/create"));
+    print(data);
     var header = {"Authorization": "Bearer ${Storage.instance.token}"};
     request.headers.addAll(header);
     request.fields.addAll(data);

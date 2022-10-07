@@ -50,6 +50,7 @@ class _ServiceViewState extends State<ServiceView> {
     super.initState();
     final model = context.read<HomeViewModal>();
     _busyNfy.value = true;
+    context.read<CartViewModel>().initCartModule(widget.categoryId ?? 0);
     final res = model.fetchAllServicesByCategoryIds(
       "${widget.categoryId ?? ""}",
       "${widget.subCategoryId ?? ""}",
@@ -80,6 +81,9 @@ class _ServiceViewState extends State<ServiceView> {
         elevation: 0.0,
       ),
       bottomNavigationBar: Consumer(builder: (context, CartViewModel model, _) {
+        if (!model.isPresent) {
+          return const SizedBox();
+        }
         return Padding(
           padding: const EdgeInsets.symmetric(
             vertical: 8.0,
@@ -91,7 +95,7 @@ class _ServiceViewState extends State<ServiceView> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  "₹ ${model.getTotalPrice()}",
+                  "₹ ${model.totalPrice}",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -103,7 +107,9 @@ class _ServiceViewState extends State<ServiceView> {
                   width: 160,
                   height: 45,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigation.instance.navigate("/cart");
+                    },
                     child: const Text(
                       "View Cart",
                       style: TextStyle(
@@ -122,125 +128,155 @@ class _ServiceViewState extends State<ServiceView> {
         );
       }),
       body: ValueListenableBuilder(
-          valueListenable: _busyNfy,
-          builder: (context, bool busy, _) {
-            if (busy) {
-              return const Center(
-                child: LoaderWidget(),
-              );
-            }
-            return Consumer<HomeViewModal>(builder: (context, modal, _) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Edit26(
-                      hint: strings.get(24),
-                      color: (darkMode) ? Colors.black : Colors.white,
-                      style: theme.style14W400,
-                      radius: 10,
-                      useAlpha: false,
-                      icon: Icons.search,
-                      controller: _searchCtrl,
-                      suffixIcon: Icons.cancel,
-                      onSuffixIconPress: () {
-                        _searchCtrl.text = "";
-                      },
-                      onSubmit: (val) {
-                        modal.fetchAllServicesByCategoryIds(
-                          "${widget.categoryId ?? ""}",
-                          "${widget.subCategoryId ?? ""}",
-                          childCategoryId: "${widget.childCategoryId ?? ""}",
-                          search: val.trim(),
-                        );
-                      },
-                    ),
+        valueListenable: _busyNfy,
+        builder: (context, bool busy, _) {
+          if (busy) {
+            return const Center(
+              child: LoaderWidget(),
+            );
+          }
+          return Consumer<HomeViewModal>(builder: (context, modal, _) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Edit26(
+                    hint: strings.get(24),
+                    color: (darkMode) ? Colors.black : Colors.white,
+                    style: theme.style14W400,
+                    radius: 10,
+                    useAlpha: false,
+                    icon: Icons.search,
+                    controller: _searchCtrl,
+                    suffixIcon: Icons.cancel,
+                    onSuffixIconPress: () {
+                      _searchCtrl.text = "";
+                    },
+                    onSubmit: (val) {
+                      modal.fetchAllServicesByCategoryIds(
+                        "${widget.categoryId ?? ""}",
+                        "${widget.subCategoryId ?? ""}",
+                        childCategoryId: "${widget.childCategoryId ?? ""}",
+                        search: val.trim(),
+                      );
+                    },
                   ),
-                  UIHelper.verticalSpaceSmall,
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (modal.categoryServices.isEmpty) {
-                          return SizedBox(
-                            child: Center(
-                              child: Text(
-                                "No data found",
-                                style: theme.style10W600Grey,
-                              ),
+                ),
+                UIHelper.verticalSpaceSmall,
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (modal.categoryServices.isEmpty) {
+                        return SizedBox(
+                          child: Center(
+                            child: Text(
+                              "No data found",
+                              style: theme.style10W600Grey,
                             ),
-                          );
-                        }
-                        return ListView.builder(
-                          itemCount: modal.categoryServices.length,
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          itemBuilder: (context, index) {
-                            final item = modal.categoryServices[index];
-                            return ServiceWidget(
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        itemCount: modal.categoryServices.length,
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        itemBuilder: (context, index) {
+                          final item = modal.categoryServices[index];
+                          return InkWell(
+                            onTap: () {
+                              showServiceModalView(item);
+                            },
+                            child: ServiceWidget(
                               data: item,
                               onTap: () {
                                 showServiceModalView(item);
                               },
-                            );
-                            // return Container(
-                            //   height: 140,
-                            //   margin: const EdgeInsets.only(bottom: 8),
-                            //   child: button202z(
-                            //     item.name,
-                            //     theme.style11W600,
-                            //     "Provider",
-                            //     theme.style11W600Grey,
-                            //     // price
-                            //     // "\$${item.price[0].price.toStringAsFixed(0)}",
-                            //     "₹ ${item.prices.first.price}",
-                            //     // item.price[0].discPrice == 0
-                            //     //     ? theme.style13W800
-                            //     //     : theme.style13W400D,
-                            //     theme.style13W800,
-                            //     // discount price
-                            //     // item.price[0].discPrice != 0
-                            //     //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
-                            //     //     : "",
-                            //     "",
-                            //     theme.style13W800Red,
-                            //     //
-                            //     4,
-                            //     Colors.orangeAccent,
-                            //     (darkMode) ? Colors.black : Colors.white,
-                            //     // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
-                            //     item.imageUrl,
-                            //     constraints.maxWidth,
-                            //     8,
-                            //     false,
-                            //     (bool val) {
-                            //       print('$val');
-                            //     },
-                            //     "",
-                            //     theme.style10W400White,
-                            //     false,
-                            //     () {
-                            //       showServiceModalView(item);
-                            //     },
-                            //     true,
-                            //   ),
-                            // );
-                          },
-                        );
-                      },
-                    ),
+                              redirectRoute: ServiceView(
+                                categoryId: widget.categoryId,
+                                subCategoryId: widget.subCategoryId,
+                                childCategoryId: widget.childCategoryId,
+                                searchKey: widget.searchKey,
+                              ),
+                            ),
+                          );
+                          // return Container(
+                          //   height: 140,
+                          //   margin: const EdgeInsets.only(bottom: 8),
+                          //   child: button202z(
+                          //     item.name,
+                          //     theme.style11W600,
+                          //     "Provider",
+                          //     theme.style11W600Grey,
+                          //     // price
+                          //     // "\$${item.price[0].price.toStringAsFixed(0)}",
+                          //     "₹ ${item.prices.first.price}",
+                          //     // item.price[0].discPrice == 0
+                          //     //     ? theme.style13W800
+                          //     //     : theme.style13W400D,
+                          //     theme.style13W800,
+                          //     // discount price
+                          //     // item.price[0].discPrice != 0
+                          //     //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
+                          //     //     : "",
+                          //     "",
+                          //     theme.style13W800Red,
+                          //     //
+                          //     4,
+                          //     Colors.orangeAccent,
+                          //     (darkMode) ? Colors.black : Colors.white,
+                          //     // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
+                          //     item.imageUrl,
+                          //     constraints.maxWidth,
+                          //     8,
+                          //     false,
+                          //     (bool val) {
+                          //       print('$val');
+                          //     },
+                          //     "",
+                          //     theme.style10W400White,
+                          //     false,
+                          //     () {
+                          //       showServiceModalView(item);
+                          //     },
+                          //     true,
+                          //   ),
+                          // );
+                        },
+                      );
+                    },
                   ),
-                ],
-              );
-            });
-          }),
+                ),
+              ],
+            );
+          });
+        },
+      ),
     );
   }
 
   void showServiceModalView(CategoryServiceModal data) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(12),
+        ),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+        maxWidth: double.maxFinite,
+      ),
       builder: (context) {
-        return AddOnViewWidget(data: data);
+        return AddOnViewWidget(
+          data: data,
+          redirectRoute: ServiceView(
+            categoryId: widget.categoryId,
+            subCategoryId: widget.subCategoryId,
+            childCategoryId: widget.childCategoryId,
+            searchKey: widget.searchKey,
+          ),
+        );
       },
     );
   }
@@ -248,8 +284,10 @@ class _ServiceViewState extends State<ServiceView> {
 
 class AddOnViewWidget extends StatefulWidget {
   final CategoryServiceModal data;
+  final Widget redirectRoute;
 
-  const AddOnViewWidget({Key? key, required this.data}) : super(key: key);
+  const AddOnViewWidget({Key? key, required this.data, required this.redirectRoute})
+      : super(key: key);
 
   @override
   State<AddOnViewWidget> createState() => _AddOnViewWidgetState();
@@ -278,7 +316,9 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
       ),
       child: DraggableScrollableSheet(
           initialChildSize: 1.0,
+          minChildSize: 0.5,
           expand: false,
+          snap: true,
           builder: (context, controller) {
             return ValueListenableBuilder(
               valueListenable: busyNfy,
@@ -298,50 +338,12 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CachedNetworkImage(imageUrl: data.imageUrl),
+                            if (data.imageUrl.isNotEmpty)
+                              CachedNetworkImage(
+                                imageUrl: data.imageUrl,
+                                width: double.maxFinite,
+                              ),
                             UIHelper.verticalSpaceMedium,
-
-                            // SizedBox(
-                            //   height: 140,
-                            //   child: button202z(
-                            //     data.name,
-                            //     theme.style11W600,
-                            //     "Providers",
-                            //     theme.style11W600Grey,
-                            //     // price
-                            //     // "\$${item.price[0].price.toStringAsFixed(0)}",
-                            //     "₹ ${data.prices.first.price}",
-                            //     // item.price[0].discPrice == 0
-                            //     //     ? theme.style13W800
-                            //     //     : theme.style13W400D,
-                            //     theme.style13W800,
-                            //     // discount price
-                            //     // item.price[0].discPrice != 0
-                            //     //     ? "\$${item.price[0].discPrice.toStringAsFixed(0)}"
-                            //     //     : "",
-                            //     "",
-                            //     theme.style13W800Red,
-                            //     //
-                            //     4,
-                            //     Colors.orangeAccent,
-                            //     (darkMode) ? Colors.black : Colors.white,
-                            //     // item.gallery.isNotEmpty ? item.gallery[0].serverPath : "",
-                            //     data.imageUrl,
-                            //     double.maxFinite,
-                            //     8,
-                            //     false,
-                            //     (bool val) {
-                            //       print('$val');
-                            //     },
-                            //     "",
-                            //     theme.style10W400White,
-                            //     false,
-                            //     () {
-                            //       // widget.openDialogService(item);
-                            //     },
-                            //     true,
-                            //   ),
-                            // ),
                             Padding(
                               padding: const EdgeInsets.all(16.0),
                               child: Column(
@@ -385,7 +387,7 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                       ),
                                       Consumer<CartViewModel>(
                                         builder: (context, CartViewModel model, _) {
-                                          CartModel? cart = model.containsService(data);
+                                          CartItem? cart = model.containsService(data);
                                           if (cart != null && cart.quantity != 0) {
                                             return Material(
                                               elevation: 2.0,
@@ -402,10 +404,10 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                                     children: [
                                                       InkWell(
                                                         onTap: () {
-                                                          model.increaseServiceQty(cart);
+                                                          model.decreaseServiceQty(cart);
                                                         },
                                                         child: const Icon(
-                                                          Icons.add,
+                                                          Icons.remove,
                                                           color: Colors.white,
                                                           size: 22,
                                                         ),
@@ -423,10 +425,10 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                                       ),
                                                       InkWell(
                                                         onTap: () {
-                                                          model.decreaseServiceQty(cart);
+                                                          model.increaseServiceQty(cart);
                                                         },
                                                         child: const Icon(
-                                                          Icons.remove,
+                                                          Icons.add,
                                                           color: Colors.white,
                                                           size: 22,
                                                         ),
@@ -450,7 +452,7 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                                         price = data.prices.first.price;
                                                       }
                                                       model.addServiceToCart(
-                                                        CartModel(
+                                                        CartItem(
                                                           service: data,
                                                           quantity: 1,
                                                           totalPrice: price,
@@ -458,8 +460,10 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                                       );
                                                     }
                                                   } else {
-                                                    Navigation.instance
-                                                        .navigate("/login", args: false);
+                                                    Navigation.instance.navigate(
+                                                      "/login",
+                                                      args: widget.redirectRoute,
+                                                    );
                                                   }
                                                 },
                                                 child: const Text(
@@ -545,7 +549,7 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                       }
                                       return Consumer(
                                         builder: (context, CartViewModel model, _) {
-                                          CartModel? cart = model.containsService(data);
+                                          CartItem? cart = model.containsService(data);
                                           return Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
@@ -568,7 +572,7 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                                           width: width,
                                                           onTap: () {
                                                             if (cartAd != null) {
-                                                              model.removeAddOnServiceToCart(
+                                                              model.removeAddOnServiceFromCart(
                                                                   cart!, cartAd);
                                                             } else {
                                                               model.addAddOnServiceToCart(
@@ -662,14 +666,16 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        data.name,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? Colors.orange : Colors.white,
+                      Flexible(
+                        child: Text(
+                          data.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isActive ? Colors.orange : Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                       UIHelper.verticalSpaceSmall,
                       Text(

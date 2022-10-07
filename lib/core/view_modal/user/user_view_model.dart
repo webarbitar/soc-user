@@ -16,12 +16,13 @@ class UserViewModel extends BaseViewModal {
 
   List<UserAddressModel> get userAddress => _userAddress;
 
-  Future<void> fetchAddresses() async {
+  Future<ResponseModal> fetchAddresses() async {
     final res = await _userService.fetchAddresses();
     if (res.status == ApiStatus.success) {
       _userAddress.clear();
       _userAddress.addAll(res.data ?? []);
     }
+    return res;
   }
 
   Future<ResponseModal<UserAddressModel>> addUserAddress(UserAddressModel data) async {

@@ -81,6 +81,20 @@ class _RateCardViewState extends State<RateCardView> {
                             ],
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                          ),
+                          child: Html(
+                            data: data.description,
+                            style: {
+                              "body": Style(
+                                margin: EdgeInsets.zero,
+                                padding: EdgeInsets.zero,
+                              )
+                            },
+                          ),
+                        ),
                         Container(
                           height: 40,
                           decoration: BoxDecoration(
@@ -94,7 +108,7 @@ class _RateCardViewState extends State<RateCardView> {
                               Expanded(
                                 flex: 3,
                                 child: Text(
-                                  "Description",
+                                  "Name",
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.black87,
@@ -119,45 +133,47 @@ class _RateCardViewState extends State<RateCardView> {
                             ],
                           ),
                         ),
-                        Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.all(Radius.circular(4)),
-                            border: Border.all(color: Colors.grey.shade400),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
+                        ...data.rateCardParts.map((dt) {
+                          return Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.all(Radius.circular(4)),
+                              border: Border.all(color: Colors.grey.shade400),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
                                   flex: 3,
-                                  child: Html(
-                                    data: data.description,
-                                    style: {
-                                      "body": Style(
-                                        margin: EdgeInsets.zero,
-                                        padding: EdgeInsets.zero,
-                                      )
-                                    },
-                                  )),
-                              const VerticalDivider(thickness: 2),
-                               Expanded(
-                                flex: 2,
-                                child: Center(
                                   child: Text(
-                                    "₹ ${data.price}",
+                                    dt.name,
                                     style: const TextStyle(
                                       fontSize: 13,
                                       color: Colors.black87,
-                                      fontWeight: FontWeight.w600,
                                       fontFamily: "Montserrat",
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                                const VerticalDivider(thickness: 2),
+                                Expanded(
+                                  flex: 2,
+                                  child: Center(
+                                    child: Text(
+                                      "₹ ${dt.price}",
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: "Montserrat",
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        })
                       ],
                     );
                   }),

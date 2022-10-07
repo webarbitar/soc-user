@@ -39,6 +39,7 @@ class _SubCategoryViewState extends State<SubCategoryView> {
     super.initState();
     // context.read<HomeViewModal>().fetchSubCategoryModal(widget.category.id);
     initModule();
+    context.read<CartViewModel>().initCartModule(widget.category.categoryId);
   }
 
   void initModule() async {
@@ -114,7 +115,7 @@ class _SubCategoryViewState extends State<SubCategoryView> {
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       bottomNavigationBar: Consumer(builder: (context, CartViewModel model, _) {
-        if (model.carts.isEmpty) {
+        if (!model.isPresent) {
           return const SizedBox();
         }
         return Padding(
@@ -128,7 +129,7 @@ class _SubCategoryViewState extends State<SubCategoryView> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  "₹ ${model.getTotalPrice()}",
+                  "₹ ${model.totalPrice}",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -356,6 +357,9 @@ class _SubCategoryViewState extends State<SubCategoryView> {
                                               onTap: () {
                                                 showServiceModalView(item);
                                               },
+                                              redirectRoute: SubCategoryView(
+                                                category: widget.category,
+                                              ),
                                             ),
                                             if (filterServices.length - 1 != index) const Divider()
                                           ],
@@ -402,7 +406,10 @@ class _SubCategoryViewState extends State<SubCategoryView> {
         maxWidth: double.maxFinite,
       ),
       builder: (context) {
-        return AddOnViewWidget(data: data);
+        return AddOnViewWidget(
+          data: data,
+          redirectRoute: SubCategoryView(category: widget.category),
+        );
       },
     );
   }

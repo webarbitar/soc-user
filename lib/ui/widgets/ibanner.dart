@@ -85,6 +85,7 @@ class _IBannerState extends State<IBanner> {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => ServiceView(
+                categoryId: item.categoryId,
                 childCategoryId: item.childCategoryId,
               ),
             ),

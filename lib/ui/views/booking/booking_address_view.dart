@@ -95,9 +95,7 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
             },
             onCameraIdle: () {
               // _animateCtrl.reverse();
-              Future.delayed(const Duration(milliseconds: 400), () {
-                _fetchLocation();
-              });
+              _fetchLocation();
             },
             onCameraMove: (pos) {
               // _animateCtrl.forward();
@@ -433,13 +431,14 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
                                   final model = context.read<UserViewModel>();
                                   if (_city != null) {
                                     _busyNfy.value = true;
-                                    final usrAdr = UserAddressModel(
+                                    var usrAdr = UserAddressModel(
                                       name: _nameCtrl.text.trim(),
                                       mobile: _mobileCtrl.text.trim(),
                                       flatNo: _houseNoCtrl.text.trim(),
                                       area: _areaCtrl.text.trim(),
                                       landmark: _landmarkCtrl.text.trim(),
-                                      pinCode: _pinCode,
+                                      latLng: _currentLatLng,
+                                      pinCode: _pinCode.isNotEmpty?_pinCode:"N/A",
                                       cityId: _city!.id,
                                       type: _tagNfy.value.toLowerCase(),
                                     );
@@ -491,6 +490,7 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
   }
 
   void _fetchLocation() async {
+    _busyNfy.value = true;
     final modal = context.read<HomeViewModal>();
     final res = await modal.fetchAddressFromGeocode(_currentLatLng);
 
@@ -502,11 +502,11 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
       print(res.data!.postalCode);
       print('****');
       print('****');
-      print('****');
       _city = await modal.checkCityAvailability(res.data!.locality, notify: false);
       _city ??=
           await modal.checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
     }
+      _busyNfy.value = false;
   }
 
   void _updateCameraView(LatLng latLng) async {

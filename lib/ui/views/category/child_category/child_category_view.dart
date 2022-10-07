@@ -124,7 +124,9 @@ class _ChildCategoryViewState extends State<ChildCategoryView> {
                           //
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => const ServiceView(),
+                              builder: (context) => ServiceView(
+                                categoryId: widget.categoryId,
+                              ),
                             ),
                           );
                         },

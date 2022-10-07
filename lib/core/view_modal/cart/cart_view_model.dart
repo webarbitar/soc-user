@@ -1,9 +1,7 @@
-import 'package:socspl/core/modal/category/add_on_modal.dart';
-import 'package:socspl/core/modal/section/section_modal.dart';
-import 'package:socspl/core/services/cart/cart_service.dart';
-
 import '../../modal/cart/cart_model.dart';
+import '../../modal/category/add_on_modal.dart';
 import '../../modal/service/category_service_modal.dart';
+import '../../services/cart/cart_service.dart';
 import '../base_view_modal.dart';
 
 class CartViewModel extends BaseViewModal {
@@ -15,61 +13,107 @@ class CartViewModel extends BaseViewModal {
 
   final List<CartModel> _carts = [];
 
-  List<CartModel> get carts => _carts;
+  int? _categoryId;
+
+  CartModel? _currentCart;
+
+  int? _currentCartIndex;
+
+  CartModel get currentCart => _currentCart!;
 
   bool get isNotEmpty => _carts.isNotEmpty;
 
-  int getTotalPrice() {
-    List<int> filter = _carts.map((e) => e.totalAmount).toList();
-    if (filter.isNotEmpty) {
-      return filter.reduce((value, element) => value + element);
+  // Determine whether cart with determine category id is present or not
+  bool get isPresent {
+    return _currentCart != null;
+  }
+
+  int get totalPrice {
+    assert(_currentCart != null, "Cart module is not initialized or no item in the cart");
+    return _currentCart!.totalPrices;
+  }
+
+  void initCartModule(int categoryId) {
+    _categoryId = categoryId;
+
+    // Filter out the current category cart items if present
+    var filterCart = _carts.where((element) => element.categoryId == _categoryId);
+    if (filterCart.isNotEmpty) {
+      _currentCart = filterCart.first;
+      _currentCartIndex = _carts.indexOf(_currentCart!);
+    } else {
+      _currentCart = null;
+      _currentCartIndex = null;
     }
-    return 0;
   }
 
-  void addServiceToCart(CartModel cart) {
-    _carts.add(cart);
+  void addServiceToCart(CartItem item) {
+    if (_currentCart != null) {
+      _currentCart!.items = [..._currentCart!.items, item];
+    } else {
+      _carts.add(CartModel(categoryId: _categoryId!, items: [item]));
+    }
+    _updateCart();
     notifyListeners();
   }
 
-  void updateServiceCart(CartModel cart) {
-    int index = _carts.indexOf(cart);
-    _carts[index] = cart;
-    notifyListeners();
+  // void updateServiceCart(CartModel cart) {
+  //   int index = _carts.indexOf(cart);
+  //   _carts[index] = cart;
+  //   notifyListeners();
+  // }
+
+  void _updateCart() {
+    // update current cart data in [CartModel] list i.e _cart
+    initCartModule(_categoryId!);
+    if (_currentCartIndex != null) {
+      _carts[_currentCartIndex!] = _currentCart!;
+    }
   }
 
-  void increaseServiceQty(CartModel cart) {
-    int index = _carts.indexOf(cart);
+  void increaseServiceQty(CartItem cart) {
+    int index = _currentCart!.items.indexOf(cart);
     int price = 0;
     if (cart.service.prices.isNotEmpty) {
       price = cart.service.prices.first.price;
     }
     cart.quantity++;
     cart.totalPrice += price;
-    _carts[index] = cart;
+    _currentCart!.items[index] = cart;
+    _updateCart();
     notifyListeners();
   }
 
-  void decreaseServiceQty(CartModel cart) {
+  void decreaseServiceQty(CartItem cart) {
     // check if qty is greater than 1. If greater than 1 then decrease qty.
     // If qty is 1 or less then remove item from cart.
+    print(cart);
     if (cart.quantity > 1) {
-      int index = _carts.indexOf(cart);
+      int index = _currentCart!.items.indexOf(cart);
       int price = 0;
       if (cart.service.prices.isNotEmpty) {
         price = cart.service.prices.first.price;
       }
       cart.quantity--;
       cart.totalPrice -= price;
-      _carts[index] = cart;
+      _currentCart!.items[index] = cart;
     } else {
-      _carts.remove(cart);
+      // if [CartItem] length is less or equal to one remove [CartModel] instance.
+      // As for other case remove [CartItem] instance as it also has quantity of 1.
+      if (_currentCart!.items.length <= 1) {
+        print("remove main");
+        _carts.remove(_currentCart);
+      } else {
+        _currentCart!.items.remove(cart);
+        print("remove items");
+      }
     }
+    _updateCart();
     notifyListeners();
   }
 
-  CartModel? containsService(CategoryServiceModal service) {
-    final flLis = _carts.where((element) => element.service.id == service.id);
+  CartItem? containsService(CategoryServiceModal service) {
+    final flLis = _currentCart?.items.where((element) => element.service.id == service.id) ?? [];
     if (flLis.isNotEmpty) {
       return flLis.first;
     }
@@ -78,41 +122,45 @@ class CartViewModel extends BaseViewModal {
 
   void addAddOnServiceToCart(CategoryServiceModal data, AddOnModal addon) {
     var cart = containsService(data);
-    print(cart);
-    var cas = CartAdditionalService(
+    var cas = AdditionalCartItem(
       addOnModal: addon,
       quantity: 1,
       totalPrice: addon.price,
     );
     if (cart != null) {
-      cart.additionalServices = [...cart.additionalServices, cas];
+      cart.additionalItem = [...cart.additionalItem, cas];
     } else {
-      _carts.add(CartModel(
-        service: data,
-        quantity: 0,
-        totalPrice: 0,
-        additionalServices: [cas],
-      ));
+      addServiceToCart(
+        CartItem(
+          service: data,
+          quantity: 0,
+          totalPrice: 0,
+          additionalItem: [cas],
+        ),
+      );
     }
+    _updateCart();
     notifyListeners();
   }
 
-  void removeAddOnServiceToCart(CartModel cart, CartAdditionalService additionalService) {
-    int index = _carts.indexOf(cart);
-    if (cart.quantity == 0 && cart.additionalServices.length <= 1) {
-      _carts.remove(cart);
+  void removeAddOnServiceFromCart(CartItem cart, AdditionalCartItem additionalItem) {
+    int index = _currentCart!.items.indexOf(cart);
+    if (cart.quantity == 0 && cart.additionalItem.length <= 1) {
+      _currentCart!.items.remove(cart);
     } else {
-      _carts[index].additionalServices.remove(additionalService);
+      _currentCart!.items[index].additionalItem.remove(additionalItem);
     }
+    _updateCart();
     notifyListeners();
   }
 
-  CartAdditionalService? containsAdditionalService(CategoryServiceModal service, AddOnModal addon) {
-    final flLis = _carts.where((element) => element.service.id == addon.serviceId).toList();
+  AdditionalCartItem? containsAdditionalService(CategoryServiceModal service, AddOnModal addon) {
+    final flLis =
+        _currentCart?.items.where((element) => element.service.id == addon.serviceId) ?? [];
     print(flLis);
     if (flLis.isNotEmpty) {
-      CartModel crt = flLis.first;
-      var filAdd = crt.additionalServices.where((element) => element.addOnModal.id == addon.id);
+      CartItem crt = flLis.first;
+      var filAdd = crt.additionalItem.where((element) => element.addOnModal.id == addon.id);
       if (filAdd.isNotEmpty) {
         return filAdd.first;
       }
@@ -120,32 +168,34 @@ class CartViewModel extends BaseViewModal {
     return null;
   }
 
-  void increaseAdditionalServiceQty(CartModel cart, CartAdditionalService additionalService) {
-    int index = _carts.indexOf(cart);
-    int index2 = cart.additionalServices.indexOf(additionalService);
+  void increaseAdditionalServiceQty(CartItem cart, AdditionalCartItem additionalItem) {
+    int index = _currentCart!.items.indexOf(cart);
+    int index2 = cart.additionalItem.indexOf(additionalItem);
     int price = 0;
-    price = additionalService.addOnModal.price;
-    additionalService.quantity++;
-    additionalService.totalPrice += price;
-    _carts[index].additionalServices[index2] = additionalService;
+    price = additionalItem.addOnModal.price;
+    additionalItem.quantity++;
+    additionalItem.totalPrice += price;
+    _currentCart!.items[index].additionalItem[index2] = additionalItem;
+    _updateCart();
     notifyListeners();
   }
 
-  void decreaseAdditionalServiceQty(CartModel cart, CartAdditionalService additionalService) {
+  void decreaseAdditionalServiceQty(CartItem cart, AdditionalCartItem additionalItem) {
     // check if qty is greater than 1. If greater than 1 then decrease qty.
     // If qty is 1 or less then remove item from cart.
-    int index = _carts.indexOf(cart);
+    int index = _currentCart!.items.indexOf(cart);
 
-    if (additionalService.quantity > 1) {
-      int index2 = cart.additionalServices.indexOf(additionalService);
+    if (additionalItem.quantity > 1) {
+      int index2 = cart.additionalItem.indexOf(additionalItem);
       int price = 0;
-      price = additionalService.addOnModal.price;
-      additionalService.quantity--;
-      additionalService.totalPrice -= price;
-      _carts[index].additionalServices[index2] = additionalService;
+      price = additionalItem.addOnModal.price;
+      additionalItem.quantity--;
+      additionalItem.totalPrice -= price;
+      _currentCart!.items[index].additionalItem[index2] = additionalItem;
     } else {
-      _carts[index].additionalServices.remove(additionalService);
+      _currentCart!.items[index].additionalItem.remove(additionalItem);
     }
+    _updateCart();
     notifyListeners();
   }
 }

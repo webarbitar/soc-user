@@ -5,22 +5,22 @@ class ServiceBooking {
   UserAddressModel address;
   String date;
   String time;
-  List<CartModel> carts = [];
+  CartModel cart;
 
   ServiceBooking({
     required this.address,
     required this.date,
     required this.time,
-    required this.carts,
+    required this.cart,
   });
 
   Map<String, dynamic> toMap() {
     return {
       "address_id": address.id,
-      "category_id": 1,
+      "category_id": cart.categoryId,
       "date": date,
       "time": time,
-      "services": carts.map((e) => e.toBookingMap())
+      "services": cart.items.map((e) => e.toBookingMap()).toList()
     };
   }
 }

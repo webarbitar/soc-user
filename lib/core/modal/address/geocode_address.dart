@@ -29,7 +29,8 @@ class GeocodeAddress {
     required this.location,
   });
 
-  factory GeocodeAddress.fromJson(Map<String, dynamic> data) {
+  factory GeocodeAddress.fromJson(List json) {
+    var data = json[0];
     return GeocodeAddress(
       neighborhood: _parseAddress(data["address_components"], type: "neighborhood"),
       subLocality: _parseAddress(data["address_components"], type: "sublocality"),
@@ -39,7 +40,7 @@ class GeocodeAddress {
       administrativeAreaLevel1:
           _parseAddress(data["address_components"], type: "administrative_area_level_1") ?? "",
       country: _parseAddress(data["address_components"], type: "country") ?? "",
-      postalCode: _parseAddress(data["address_components"], type: "postal_code") ?? "",
+      postalCode: _parsePostalCode(json, type: "postal_code") ?? "",
       formattedAddress: data["formatted_address"] ?? "",
       location: LatLng(data["geometry"]["location"]["lat"], data["geometry"]["location"]["lng"]),
     );
@@ -52,6 +53,16 @@ class GeocodeAddress {
       }
     }
     return null;
+  }
+
+  static String? _parsePostalCode(List data, {required String type}) {
+    List filterResult = data.where((data) => (data["types"] as List).contains(type)).toList();
+    if (filterResult.isNotEmpty) {
+      var filterData = filterResult.first["address_components"] as List;
+      var res = filterData.singleWhere((data) => (data["types"] as List).contains(type));
+      return res["long_name"];
+    }
+    return "N/A";
   }
 
   String address() {

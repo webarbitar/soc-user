@@ -17,20 +17,20 @@ class MapService with ServiceMixin {
         "$mapGecode?latlng=${"${position.latitude},${position.longitude}"}&location_type=APPROXIMATE&key=$mapToken");
     final res = await http.get(uri);
     // log(res.body);
-    try {
+    // try {
       switch (res.statusCode) {
         case 200:
           final jsonData = jsonDecode(res.body);
           if (jsonData["status"] == "OK" && (jsonData["results"] as List).isNotEmpty) {
-            final data = GeocodeAddress.fromJson(jsonData["results"][0]);
+            final data = GeocodeAddress.fromJson(jsonData["results"]);
             return ResponseModal.success(data: data);
           }
           return ResponseModal.error(status: ApiStatus.error, message: ServiceMixin.ERROR_MESSAGE);
         default:
           return errorResponse(res);
       }
-    } catch (ex) {
-      return exceptionResponse(ex);
-    }
+    // } catch (ex) {
+    //   return exceptionResponse(ex);
+    // }
   }
 }

@@ -13,19 +13,17 @@ import '../../shared/navigation/navigation.dart';
 import '../../widgets/appbars/appbar1.dart';
 
 class OtpView extends StatelessWidget {
-  OtpView({Key? key}) : super(key: key);
+  final Widget? redirectRoute;
 
-  var windowWidth = 0.0;
-  var windowHeight = 0.0;
-  double windowSize = 0;
+  OtpView({Key? key, required this.redirectRoute}) : super(key: key);
+
   final _otpCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    windowWidth = MediaQuery.of(context).size.width;
-    windowHeight = MediaQuery.of(context).size.height;
-    windowSize = min(windowWidth, windowHeight);
+    var windowWidth = MediaQuery.of(context).size.width;
     final modal = context.read<AuthViewModal>();
+    print(redirectRoute);
     return Scaffold(
       backgroundColor: darkMode ? Colors.black : mainColorGray,
       body: Directionality(
@@ -91,7 +89,17 @@ class OtpView extends StatelessWidget {
                           res.then((value) {
                             if (value.status == ApiStatus.success) {
                               messageOk(context, value.message);
-                              Navigation.instance.navigateAndRemoveUntil("/home");
+                              if (redirectRoute != null) {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => redirectRoute!,
+                                  ),
+                                );
+                              } else {
+                                Navigation.instance.navigateAndRemoveUntil("/home");
+                              }
                             } else {
                               messageError(context, value.message);
                             }

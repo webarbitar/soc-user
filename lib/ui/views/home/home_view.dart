@@ -20,6 +20,7 @@ import '../../widgets/dialogs/easyDialog2.dart';
 import '../../widgets/dialogs/menu.dart';
 import '../../widgets/localHero.dart';
 import 'component/home.dart';
+import 'component/home_booking_view.dart';
 
 ProviderData currentProvider = ProviderData.createEmpty();
 GlobalKey currentSourceKeyProvider = GlobalKey();
@@ -151,7 +152,7 @@ class _HomeViewState extends State<HomeView> with SingleTickerProviderStateMixin
                     ),
                   if (_state == "favorite") Container(),
                   if (_state == "cart") Container(),
-                  if (_state == "booking") Container(),
+                  if (_state == "booking") const HomeBookingView(),
                   Container(
                     alignment: Alignment.bottomCenter,
                     child: BottomBar13(

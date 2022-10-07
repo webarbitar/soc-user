@@ -22,9 +22,9 @@ import '../../widgets/checkbox/checkbox12.dart';
 import '../../widgets/edit43.dart';
 
 class LoginPageView extends StatefulWidget {
-  final bool skip;
+  final Widget? redirectRoute;
 
-  const LoginPageView({Key? key, this.skip = true}) : super(key: key);
+  const LoginPageView({Key? key, this.redirectRoute}) : super(key: key);
 
   @override
   State<LoginPageView> createState() => _LoginPageViewState();
@@ -36,8 +36,6 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
   var windowHeight = 0.0;
   double windowSize = 0;
   final _phoneCtrl = TextEditingController();
-  var _remember = false;
-  var _agree = false;
 
   @override
   void dispose() {
@@ -140,7 +138,7 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
               ),
             ],
           ),
-          if (widget.skip)
+          if (widget.redirectRoute == null)
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -203,7 +201,7 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
       (value) async {
         if (value.status == ApiStatus.success) {
           messageOk(context, value.message);
-          Navigation.instance.navigate("/otp");
+          Navigation.instance.navigate("/otp", args: widget.redirectRoute);
         } else if (value.status == ApiStatus.notFound) {
           modal.isLogin = false;
           final res2 = await modal.sendRegisterOtp(UserRegistrationModal(mobile: _phoneCtrl.text));
@@ -219,11 +217,5 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
         _waits(false);
       },
     );
-  }
-
-  _register() {
-    _waits(true);
-    Navigation.instance.navigate("/signup");
-    _waits(false);
   }
 }

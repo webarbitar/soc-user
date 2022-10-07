@@ -4,10 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:socspl/core/constance/style.dart';
 import 'package:socspl/core/enum/api_status.dart';
 import 'package:socspl/core/modal/service/service_booking.dart';
+import 'package:socspl/core/modal/time_slot_model.dart';
 import 'package:socspl/core/utils/string_extension.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/core/view_modal/cart/cart_view_model.dart';
 import 'package:socspl/ui/shared/ui_helpers.dart';
+import 'package:socspl/ui/views/booking/booking_success_view.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
 import '../../widgets/custom/custom_button.dart';
@@ -24,40 +26,17 @@ class _BookingDateViewState extends State<BookingDateView> {
   final _dateFormat = DateFormat("yyyy/MM/dd");
   final List<DateTime> days = [];
   late DateTime _currentFilter;
-  String? _selectedTime;
 
-  static const _timeData = [
-    "08:00 AM",
-    "08:30 AM",
-    "09:00 AM",
-    "09:30 AM",
-    "10:00 AM",
-    "10:30 AM",
-    "11:00 AM",
-    "11:30 AM",
-    "12:00 PM",
-    "12:30 PM",
-    "01:00 PM",
-    "01:30 PM",
-    "02:00 PM",
-    "02:30 PM",
-    "03:00 PM",
-    "03:30 PM",
-    "04:00 PM",
-    "04:30 PM",
-    "05:00 PM",
-    "05:30 PM",
-    "06:00 PM",
-    "06:30 PM",
-    "07:00 PM",
-    "07:30 PM",
-  ];
+  TimeSlotModel? _selectedTime;
 
   final now = DateTime.now();
 
   @override
   void initState() {
     super.initState();
+    final model = context.read<BookingViewModel>();
+    model.fetchTimeSlots(context.read<CartViewModel>().currentCart.categoryId);
+
     now.subtract(const Duration(days: 7));
     buildDays(startDate: now, endDate: now.add(const Duration(days: 30)));
   }
@@ -172,44 +151,47 @@ class _BookingDateViewState extends State<BookingDateView> {
                         LayoutBuilder(
                           builder: (context, constraints) {
                             double width = (constraints.maxWidth / 3) - 10;
-                            return Wrap(
-                              spacing: 14,
-                              runSpacing: 14,
-                              children: [
-                                ..._timeData.map((e) {
-                                  bool isActive = _selectedTime == e;
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedTime = e;
-                                      });
-                                    },
-                                    child: Material(
-                                      color: isActive ? Colors.orange.shade100 : Colors.white,
-                                      elevation: 1.0,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(6),
-                                        side: BorderSide(
-                                            color: isActive ? Colors.orange : Colors.grey.shade200),
-                                      ),
-                                      child: Container(
-                                        width: width,
-                                        padding: const EdgeInsets.all(14),
-                                        child: Center(
-                                          child: Text(
-                                            e,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontFamily: "Montserrat",
-                                                color: isActive ? Colors.black87 : Colors.black),
+                            return Consumer<BookingViewModel>(builder: (context, model, _) {
+                              return Wrap(
+                                spacing: 14,
+                                runSpacing: 14,
+                                children: [
+                                  ...model.timerSlots.map((e) {
+                                    bool isActive = _selectedTime == e;
+                                    return InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTime = e;
+                                        });
+                                      },
+                                      child: Material(
+                                        color: isActive ? Colors.orange.shade100 : Colors.white,
+                                        elevation: 1.0,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(6),
+                                          side: BorderSide(
+                                              color:
+                                                  isActive ? Colors.orange : Colors.grey.shade200),
+                                        ),
+                                        child: Container(
+                                          width: width,
+                                          padding: const EdgeInsets.all(14),
+                                          child: Center(
+                                            child: Text(
+                                              e.timeSlot,
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontFamily: "Montserrat",
+                                                  color: isActive ? Colors.black87 : Colors.black),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                                }),
-                              ],
-                            );
+                                    );
+                                  }),
+                                ],
+                              );
+                            });
                           },
                         ),
                       ],
@@ -230,7 +212,16 @@ class _BookingDateViewState extends State<BookingDateView> {
                 color: Colors.white,
               ),
               onTap: () {
-                showBottomPaymentModel();
+                if (_selectedTime != null) {
+                  showBottomPaymentModel();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please select the operation time"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
             ),
           )
@@ -243,7 +234,7 @@ class _BookingDateViewState extends State<BookingDateView> {
     final model = context.read<BookingViewModel>();
     showModalBottomSheet(
       context: context,
-      builder: (context) {
+      builder: (ctx) {
         return Padding(
           padding: const EdgeInsets.all(14.0),
           child: Column(
@@ -316,44 +307,35 @@ class _BookingDateViewState extends State<BookingDateView> {
                   color: Colors.white,
                 ),
                 onTap: () {
+                  Navigator.of(ctx).pop();
                   final dateFormat = DateFormat("yyyy-MM-dd");
-                  if (_selectedTime != null) {
-                    final model = context.read<BookingViewModel>();
-                    busyDialog();
-                    final res = model.bookService(
-                      ServiceBooking(
-                        address: model.userAddress!,
-                        date: dateFormat.format(_currentFilter),
-                        time: _selectedTime!,
-                        carts: context.read<CartViewModel>().carts,
-                      ),
-                    );
-                    res.then((value) {
-                      if (value.status == ApiStatus.success) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(value.message),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(value.message),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                      Navigator.of(context).pop();
-                    });
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Please select the operation time"),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                  final model = context.read<BookingViewModel>();
+                  busyDialog();
+                  final res = model.bookService(
+                    ServiceBooking(
+                      address: model.userAddress!,
+                      date: dateFormat.format(_currentFilter),
+                      time: _selectedTime!.timeSlot,
+                      cart: context.read<CartViewModel>().currentCart,
+                    ),
+                  );
+                  res.then((value) {
+                    Navigator.of(context).pop();
+                    if (value.status == ApiStatus.success) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const BookingSuccessView(),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(value.message),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  });
                 },
               ),
               UIHelper.verticalSpaceMedium,

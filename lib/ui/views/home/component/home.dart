@@ -493,9 +493,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: width,
                           child: Column(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: Container(
+                              if (data.imageUrl.isNotEmpty)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      color: backgroundColor,
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(4),
+                                      ),
+                                    ),
+                                    width: width,
+                                    height: 80,
+                                    child: CachedNetworkImage(
+                                      imageUrl: data.imageUrl,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                )
+                              else
+                                Container(
                                   decoration: const BoxDecoration(
                                     color: backgroundColor,
                                     borderRadius: BorderRadius.all(
@@ -504,12 +521,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   width: width,
                                   height: 80,
-                                  child: CachedNetworkImage(
-                                    imageUrl: data.imageUrl,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: const Text("No image"),
                                 ),
-                              ),
                               UIHelper.verticalSpaceSmall,
                               Text(
                                 data.name,
