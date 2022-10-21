@@ -3,6 +3,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:socspl/core/enum/api_status.dart';
 import 'package:socspl/core/modal/banner/promo_banner.dart';
 import 'package:socspl/core/modal/category/add_on_modal.dart';
@@ -12,8 +13,10 @@ import 'package:socspl/core/modal/category/trending_category_modal.dart';
 import 'package:socspl/core/modal/city_modal.dart';
 import 'package:socspl/core/modal/section/section_modal.dart';
 import 'package:socspl/core/modal/service/category_service_modal.dart';
+import 'package:socspl/core/modal/testimonial/testimonial_model.dart';
 import 'package:socspl/core/services/banner/banner_service.dart';
 import 'package:socspl/core/services/category/category_service.dart';
+import 'package:socspl/core/services/home/home_service.dart';
 import 'package:socspl/core/services/map/map_service.dart';
 import 'package:socspl/core/utils/permission/permission_handler_service.dart';
 import 'package:socspl/core/view_modal/base_view_modal.dart';
@@ -27,8 +30,10 @@ import '../../modal/category/category_modal.dart';
 import '../../modal/category/child_category_modal.dart';
 import '../../modal/response_modal.dart';
 import '../../utils/storage/storage.dart';
+import '../cart/cart_view_model.dart';
 
 class HomeViewModal extends BaseViewModal with PermissionHandlerService {
+  HomeService _homeService = HomeService();
   CategoryService categoryService = CategoryService();
   BannerService bannerService = BannerService();
   late MapService _mapService;
@@ -42,6 +47,8 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
   List<PromoBannerModal> offerBanners = [];
 
   List<PromoBannerModal> workBanners = [];
+
+  List<BannerModal> homeBanner = const [];
 
   List<CategoryModal> categories = [];
 
@@ -63,6 +70,8 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
 
   List<TrendingCategoryModal> trendingCategories = [];
 
+  List<TestimonialModel> testimonials = [];
+
   late PermissionStatus _permissionStatus = PermissionStatus.denied;
 
   CityModal? city;
@@ -75,7 +84,8 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
 
   LatLng currentLatLng = const LatLng(22.5726, 88.3639);
 
-  initHomeModule({bool initLocation = true}) async {
+  Future<void> initHomeModule(BuildContext context, {bool initLocation = true}) async {
+    final cartModel = context.read<CartViewModel>();
     setBusy(true);
     final pref = Storage.instance;
     print(pref.address);
@@ -101,6 +111,10 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       categories.addAll(res2.data!);
     }
 
+    if (city != null) {
+      cartModel.initLocalCartModule("${city!.id}", categories);
+    }
+
     final res3 = categoryService.fetchTrendingCategory("${city?.id ?? ""}");
     res3.then((value) {
       if (value.status == ApiStatus.success) {
@@ -111,7 +125,9 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
     });
     fetchOfferBanner();
     fetchWorkBanner();
+    fetchHomeBanners();
     fetchSections();
+    fetchAllTestimonials();
     busy = false;
     notifyListeners();
   }
@@ -131,6 +147,14 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
     if (res.status == ApiStatus.success) {
       workBanners.clear();
       workBanners.addAll(res.data!);
+    }
+    notifyListeners();
+  }
+
+  Future<void> fetchHomeBanners() async {
+    final res = await bannerService.fetchHomeBanners();
+    if (res.status == ApiStatus.success) {
+      homeBanner = res.data!;
     }
     notifyListeners();
   }
@@ -198,17 +222,18 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
     notifyListeners();
   }
 
-  fetchServicesById(String id) async {
+  Future<ResponseModal<CategoryServiceModal>> fetchServicesById(String id, {String? cityId}) async {
     setBusy(true);
     final res = await categoryService.fetchServiceById(
       id,
-      "${city?.id ?? ""}",
+      "${cityId ?? (city?.id ?? "")}",
     );
     if (res.status == ApiStatus.success) {
       serviceModal = res.data;
       addOnList = serviceModal?.addOns ?? [];
     }
     busy = false;
+    return res;
   }
 
   Future<void> fetchAddOnModal(int childCategoryId, {String search = ""}) async {
@@ -239,6 +264,14 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
     if (res.status == ApiStatus.success) {
       rateCards.clear();
       rateCards.addAll(res.data!);
+    }
+  }
+
+  Future<void> fetchAllTestimonials() async {
+    final res = await _homeService.fetchAllTestimonials();
+    if (res.status == ApiStatus.success) {
+      testimonials = res.data!;
+      notifyListeners();
     }
   }
 

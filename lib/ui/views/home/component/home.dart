@@ -4,36 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/view_modal/home/home_view_modal.dart';
 import 'package:socspl/ui/shared/navigation/navigation.dart';
-import 'package:socspl/ui/views/category/child_category/child_category_view.dart';
+import 'package:socspl/ui/widgets/custom/custom_network_image.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
 import '../../../../core/constance/strings.dart';
 import '../../../../core/constance/style.dart';
 import '../../../../core/modal/category/category_modal.dart';
-import '../../../../core/modal/service.dart';
+import '../../../../core/utils/storage/storage.dart';
 import '../../../shared/ui_helpers.dart';
-import '../../../widgets/buttons/button134.dart';
 import '../../../widgets/edit26.dart';
 import '../../../widgets/ibanner.dart';
+import '../../service/service_details_view.dart';
 import '../../service/service_view.dart';
 
 class HomeScreen extends StatefulWidget {
-  final Function(String) callback;
-  final Function() openDialogFilter;
-  final Function(ServiceData item) openDialogService;
-
-  const HomeScreen(
-      {Key? key,
-      required this.callback,
-      required this.openDialogFilter,
-      required this.openDialogService})
-      : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   final _controllerSearch = TextEditingController();
   String _searchText = "";
 
@@ -50,6 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(Storage.instance.pref.getStringList("carts"));
+    super.build(context);
     return Scaffold(
       backgroundColor: darkMode ? Colors.black : mainColorGray,
       body: SafeArea(
@@ -114,9 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 IconButton(
-                                    onPressed: () {
-                                      widget.callback("chat");
-                                    },
+                                    onPressed: () {},
                                     icon: Stack(
                                       children: [
                                         const Padding(
@@ -151,9 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     )),
                                 IconButton(
-                                    onPressed: () {
-                                      widget.callback("notify");
-                                    },
+                                    onPressed: () {},
                                     icon: Stack(
                                       children: [
                                         const Padding(
@@ -218,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onSubmit: (String val) {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => ChildCategoryView(
+                                  builder: (context) => ServiceView(
                                     searchKey: val.trim(),
                                   ),
                                 ),
@@ -231,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
-                            onPressed: widget.openDialogFilter,
+                            onPressed: () {},
                             icon: const Icon(
                               Icons.filter_alt,
                               color: primaryColor,
@@ -308,6 +297,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                     margin: const EdgeInsets.only(left: 10, right: 10),
                                     child: _horizontalCategories(),
                                   ),
+                                  UIHelper.verticalSpaceMedium,
+                                  if (modal.homeBanner.isNotEmpty)
+                                    InkWell(
+                                      onTap: () {
+                                        var hb = modal.homeBanner.first;
+                                        if (hb.serviceId != 0) {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => ServiceDetailsView(
+                                                  serviceId: hb.serviceId,
+                                                  categoryId: hb.categoryId),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        color: Colors.red.shade50,
+                                        child: CachedNetworkImage(
+                                          width: double.maxFinite,
+                                          imageUrl: modal.homeBanner.first.imageUrl,
+                                        ),
+                                      ),
+                                    ),
+
                                   if (modal.offerBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
                                   if (modal.offerBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
                                   if (modal.offerBanners.isNotEmpty)
@@ -329,12 +342,37 @@ class _HomeScreenState extends State<HomeScreen> {
                                   //   return CachedNetworkImage(imageUrl: data.imageUrl);
                                   // }),
                                   UIHelper.verticalSpaceMedium,
-                                  UIHelper.verticalSpaceMedium,
                                   Container(
                                     margin: const EdgeInsets.only(left: 10, right: 10),
                                     child: _trendingCategories(),
                                   ),
-                                  if (modal.workBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
+
+                                  UIHelper.verticalSpaceMedium,
+                                  if (modal.homeBanner.isNotEmpty)
+                                    InkWell(
+                                      onTap: () {
+                                        var hb = modal.homeBanner.last;
+                                        if (hb.serviceId != 0) {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => ServiceDetailsView(
+                                                  serviceId: hb.serviceId,
+                                                  categoryId: hb.categoryId),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: CachedNetworkImage(
+                                        width: double.maxFinite,
+                                        imageUrl: modal.homeBanner.last.imageUrl,
+                                      ),
+                                    ),
+                                  UIHelper.verticalSpaceMedium,
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 10, right: 10),
+                                    child: _buildSectionView(),
+                                  ),
+                                  UIHelper.verticalSpaceMedium,
                                   if (modal.workBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
                                   if (modal.workBanners.isNotEmpty)
                                     Center(
@@ -355,12 +393,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                   //   return CachedNetworkImage(imageUrl: data.imageUrl);
                                   // }),
                                   UIHelper.verticalSpaceMedium,
+                                  _buildTestimonial(),
                                   UIHelper.verticalSpaceMedium,
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 10, right: 10),
-                                    child: _buildSectionView(),
-                                  ),
-                                  UIHelper.verticalSpaceLarge,
+                                  if (modal.homeBanner.isNotEmpty)
+                                    InkWell(
+                                      onTap: () {
+                                        var hb = modal.homeBanner[1];
+                                        if (hb.serviceId != 0) {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => ServiceDetailsView(
+                                                  serviceId: hb.serviceId,
+                                                  categoryId: hb.categoryId),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        color: Colors.deepPurple.shade50,
+                                        child: CachedNetworkImage(
+                                          width: double.maxFinite,
+                                          imageUrl: modal.homeBanner[1].imageUrl,
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -409,8 +465,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         width: width,
                         height: 80,
-                        child: CachedNetworkImage(
-                          imageUrl: data.imageUrl,
+                        child: CustomNetworkImage(
+                          url: data.imageUrl,
+                          height: 180,
+                          fit: BoxFit.fitHeight,
                         ),
                       ),
                     ),
@@ -637,9 +695,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   width: width,
                                   height: 90,
-                                  child: CachedNetworkImage(
-                                    imageUrl: data.imageUrl,
-                                    fit: BoxFit.fitHeight,
+                                  child: CustomNetworkImage(
+                                    url: data.imageUrl,
+                                    fit: BoxFit.cover,
+                                    height: 240,
                                   ),
                                 ),
                               ),
@@ -736,8 +795,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => ServiceView(
+                                  builder: (context) => ServiceDetailsView(
                                     categoryId: serv.categoryId,
+                                    serviceId: serv.serviceId,
                                   ),
                                 ),
                               );
@@ -753,19 +813,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Expanded(
                                     child: Align(
                                       alignment: Alignment.topCenter,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(5),
-                                        child: CachedNetworkImage(
-                                          errorWidget: (context, url, error) {
-                                            return Container(
-                                              color: Colors.grey.shade200,
-                                              child: const Center(
-                                                child: Text("No image"),
-                                              ),
-                                            );
-                                          },
-                                          imageUrl: serv.imageUrl,
-                                          fit: BoxFit.cover,
+                                      child: SizedBox(
+                                        height: 90,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(5),
+                                          child: CustomNetworkImage(
+                                            url: serv.imageUrl,
+                                            fit: BoxFit.cover,
+                                            height: 180,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -813,4 +869,134 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
+  _buildTestimonial() {
+    final model = context.watch<HomeViewModal>();
+    return LayoutBuilder(builder: (context, constraint) {
+      double width = constraint.maxWidth - 28;
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ...model.testimonials.map((data) {
+              return Container(
+                width: width,
+                height: 230,
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            data.title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: "Montserrat",
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        UIHelper.horizontalSpaceSmall,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 6.0),
+                            Text(
+                              "${data.rating}",
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                    const Expanded(
+                      child: UIHelper.verticalSpaceMedium,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "\“",
+                          style: TextStyle(
+                              fontSize: 26,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              height: 0.4),
+                        ),
+                        Center(
+                          child: Text(
+                            data.description,
+                            style: const TextStyle(
+                              fontFamily: "Montserrat",
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.4,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 4,
+                            overflow: TextOverflow.clip,
+                          ),
+                        ),
+                        const Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "\„",
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontFamily: "Montserrat",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Expanded(child: UIHelper.verticalSpaceSmall),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Icon(
+                          Icons.account_circle_outlined,
+                          color: backgroundColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          data.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: backgroundColor,
+                            fontFamily: "Montserrat",
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              );
+            })
+          ],
+        ),
+      );
+    });
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -35,7 +35,7 @@ class _BookingDateViewState extends State<BookingDateView> {
   void initState() {
     super.initState();
     final model = context.read<BookingViewModel>();
-    model.fetchTimeSlots(context.read<CartViewModel>().currentCart.categoryId);
+    model.fetchTimeSlots(context.read<CartViewModel>().currentCart!.categoryId);
 
     now.subtract(const Duration(days: 7));
     buildDays(startDate: now, endDate: now.add(const Duration(days: 30)));
@@ -286,7 +286,7 @@ class _BookingDateViewState extends State<BookingDateView> {
                   const Icon(Icons.timer_sharp),
                   UIHelper.horizontalSpaceSmall,
                   Text(
-                    "${_currentFilter.toString().split(" ")[0]} $_selectedTime",
+                    "${_currentFilter.toString().split(" ")[0]} ${_selectedTime?.timeSlot}",
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       fontFamily: "Montserrat",
@@ -316,15 +316,18 @@ class _BookingDateViewState extends State<BookingDateView> {
                       address: model.userAddress!,
                       date: dateFormat.format(_currentFilter),
                       time: _selectedTime!.timeSlot,
-                      cart: context.read<CartViewModel>().currentCart,
+                      cart: context.read<CartViewModel>().currentCart!,
                     ),
                   );
                   res.then((value) {
                     Navigator.of(context).pop();
                     if (value.status == ApiStatus.success) {
+                      context.read<CartViewModel>().clearCartData();
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const BookingSuccessView(),
+                          builder: (context) => BookingSuccessView(
+                            bookingId: value.data!.bookingId,
+                          ),
                         ),
                       );
                     } else {

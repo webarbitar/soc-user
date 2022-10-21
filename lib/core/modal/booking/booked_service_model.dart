@@ -1,9 +1,10 @@
-import 'package:socspl/core/modal/address/user_address_model.dart';
-import 'package:socspl/core/modal/category/category_modal.dart';
-import 'package:socspl/core/modal/city_modal.dart';
+import '../address/user_address_model.dart';
+import '../category/category_modal.dart';
+import '../city_modal.dart';
 
 class BookedServiceModel {
   int id;
+  String bookingId;
   int userId;
   int? serviceProviderId;
   int categoryId;
@@ -21,6 +22,7 @@ class BookedServiceModel {
 
   BookedServiceModel.fromJson(Map<String, dynamic> json)
       : id = json['id'],
+        bookingId = json['booking_id'] ?? "",
         userId = json['user_id'],
         serviceProviderId = json['service_provider_id'],
         categoryId = json['category_id'],

@@ -73,7 +73,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     /// Booking page routes
     ///
     case '/booking-address':
-      return FadeTransitionPageRouteBuilder(page: const BookingAddressView());
+      return FadeTransitionPageRouteBuilder(
+        page: BookingAddressView(
+          onTap: settings.arguments as VoidCallback,
+        ),
+      );
 
     default:
       return MaterialPageRoute(builder: (_) {

@@ -8,18 +8,24 @@ import '../../../../core/modal/cart/cart_model.dart';
 import '../../../../core/modal/service/category_service_modal.dart';
 import '../../../../core/utils/storage/storage.dart';
 import '../../../../core/view_modal/cart/cart_view_model.dart';
+import '../../../../core/view_modal/home/home_view_modal.dart';
 import '../../../shared/divider/dotted_divider.dart';
 import '../../../shared/navigation/navigation.dart';
 import '../../../shared/ui_helpers.dart';
 
 class ServiceWidget extends StatelessWidget {
   final CategoryServiceModal data;
+  final bool enableAddCart;
   final VoidCallback onTap;
   final Widget redirectRoute;
 
-  const ServiceWidget(
-      {Key? key, required this.data, required this.onTap, required this.redirectRoute})
-      : super(key: key);
+  const ServiceWidget({
+    Key? key,
+    required this.data,
+    required this.onTap,
+    required this.redirectRoute,
+    this.enableAddCart = true,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -137,104 +143,109 @@ class ServiceWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(
-                bottom: 10,
-                left: 30,
-                right: 30,
-                child: Consumer<CartViewModel>(
-                  builder: (context, CartViewModel model, _) {
-                    CartItem? cart = model.containsService(data);
-                    if (cart != null) {
-                      return Material(
-                        elevation: 2.0,
-                        borderRadius: BorderRadius.circular(4),
-                        color: Theme.of(context).primaryColor,
-                        child: SizedBox(
-                          height: 30,
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    if (cart.additionalItem.isNotEmpty) {
-                                      onTap();
-                                    } else {
-                                      model.decreaseServiceQty(cart);
-                                    }
-                                  },
-                                  child: const Icon(
-                                    Icons.remove,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    "${cart.totalQuantity}",
-                                    style: const TextStyle(
+              if (enableAddCart)
+                Positioned(
+                  bottom: 10,
+                  left: 30,
+                  right: 30,
+                  child: Consumer<CartViewModel>(
+                    builder: (context, CartViewModel model, _) {
+                      CartItem? cart = model.containsService(data);
+                      if (cart != null) {
+                        return Material(
+                          elevation: 2.0,
+                          borderRadius: BorderRadius.circular(4),
+                          color: Theme.of(context).primaryColor,
+                          child: SizedBox(
+                            height: 30,
+                            child: Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      if (cart.additionalItem.isNotEmpty) {
+                                        onTap();
+                                      } else {
+                                        model.decreaseServiceQty(cart);
+                                      }
+                                    },
+                                    child: const Icon(
+                                      Icons.remove,
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w600,
                                     ),
-                                    softWrap: false,
-                                    overflow: TextOverflow.clip,
                                   ),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    if (cart.additionalItem.isNotEmpty) {
-                                      onTap();
-                                    } else {
-                                      model.increaseServiceQty(cart);
-                                    }
-                                  },
-                                  child: const Icon(
-                                    Icons.add,
-                                    color: Colors.white,
+                                  Flexible(
+                                    child: Text(
+                                      "${cart.totalQuantity}",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      softWrap: false,
+                                      overflow: TextOverflow.clip,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  InkWell(
+                                    onTap: () {
+                                      if (cart.additionalItem.isNotEmpty) {
+                                        onTap();
+                                      } else {
+                                        model.increaseServiceQty(cart);
+                                      }
+                                    },
+                                    child: const Icon(
+                                      Icons.add,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    } else {
-                      return SizedBox(
-                        height: 30,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (Storage.instance.isLogin) {
-                              if (cart != null) {
-                                model.increaseServiceQty(cart);
-                              } else {
-                                var price = 0;
-                                if (data.prices.isNotEmpty) {
-                                  price = data.prices.first.price;
+                        );
+                      } else {
+                        return SizedBox(
+                          height: 30,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (Storage.instance.isLogin) {
+                                if (cart != null) {
+                                  model.increaseServiceQty(cart);
+                                } else {
+                                  final homeModel = context.read<HomeViewModal>();
+                                  final cat = homeModel.categories
+                                      .singleWhere((el) => el.id == data.categoryId);
+                                  context.read<CartViewModel>().initCartModule(cat);
+                                  var price = 0;
+                                  if (data.prices.isNotEmpty) {
+                                    price = data.prices.first.price;
+                                  }
+                                  model.addServiceToCart(
+                                    CartItem(
+                                      service: data,
+                                      quantity: 1,
+                                      totalPrice: price,
+                                    ),
+                                  );
                                 }
-                                model.addServiceToCart(
-                                  CartItem(
-                                    service: data,
-                                    quantity: 1,
-                                    totalPrice: price,
-                                  ),
-                                );
+                              } else {
+                                Navigation.instance.navigate("/login", args: redirectRoute);
                               }
-                            } else {
-                              Navigation.instance.navigate("/login", args: redirectRoute);
-                            }
-                          },
-                          child: const Text(
-                            "Add",
-                            style: TextStyle(
-                              color: Colors.white,
+                            },
+                            child: const Text(
+                              "Add",
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    }
-                  },
+                        );
+                      }
+                    },
+                  ),
                 ),
-              ),
             ],
           )
         ],

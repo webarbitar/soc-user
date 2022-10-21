@@ -15,7 +15,7 @@ class BannerService with ServiceMixin {
   final Storage _storage = Storage.instance;
 
   Future<ResponseModal<List<BannerModal>>> fetchAllBanner(String cityId) async {
-    final header = {"Authorization": "Bearer $token"};
+    final header = {"Authorization": "Bearer ${_storage.token}"};
     final res = await http.get(parseUri("$banner?city_id=$cityId"), headers: header);
     switch (res.statusCode) {
       case 200:
@@ -27,8 +27,26 @@ class BannerService with ServiceMixin {
     }
   }
 
+  Future<ResponseModal<List<BannerModal>>> fetchHomeBanners() async {
+    final header = {"Authorization": "Bearer ${_storage.token}"};
+    final res = await http.get(parseUri(homeBanner), headers: header);
+    switch (res.statusCode) {
+      case 200:
+        final jsonData = jsonDecode(res.body);
+        if (jsonData["status"]) {
+          final data = BannerModal.fromJson(jsonData["data"]["banner1"]);
+          final data1 = BannerModal.fromJson(jsonData["data"]["banner2"]);
+          final data2 = BannerModal.fromJson(jsonData["data"]["banner3"]);
+          return ResponseModal.success(data: [data, data1, data2]);
+        }
+        return ResponseModal.error(message: jsonData["message"]);
+      default:
+        return errorResponse(res);
+    }
+  }
+
   Future<ResponseModal<List<PromoBannerModal>>> fetchAllOfferBanner(String cityId) async {
-    final header = {"Authorization": "Bearer $token"};
+    final header = {"Authorization": "Bearer ${_storage.token}"};
     final res = await http.get(parseUri("$offerBanner?city_id=$cityId"), headers: header);
     switch (res.statusCode) {
       case 200:
@@ -41,7 +59,7 @@ class BannerService with ServiceMixin {
   }
 
   Future<ResponseModal<List<PromoBannerModal>>> fetchAllWorkBanner(String cityId) async {
-    final header = {"Authorization": "Bearer $token"};
+    final header = {"Authorization": "Bearer ${_storage.token}"};
     final res = await http.get(parseUri("$workBanner?city_id=$cityId"), headers: header);
     switch (res.statusCode) {
       case 200:

@@ -28,6 +28,9 @@ class ServiceModal {
   int id;
   int sectionId;
   int categoryId;
+  int subCategoryId;
+  int childCategoryId;
+  int serviceId;
   String title;
   String subtitle;
   String image;
@@ -40,6 +43,9 @@ class ServiceModal {
       : id = json['id'],
         sectionId = json['section_id'],
         categoryId = json['category_id'] ?? 0,
+        subCategoryId = json['sub_category_id'] ?? 0,
+        childCategoryId = json['child_category_id'] ?? 0,
+        serviceId = json['service_id'] ?? 0,
         title = json['title'],
         subtitle = json['subtitle'] ?? "",
         image = json['image'] ?? "",

@@ -4,10 +4,12 @@ import '../service/category_service_modal.dart';
 
 class CartModel {
   int categoryId;
+  int minPrice;
   List<CartItem> items;
 
   CartModel({
     required this.categoryId,
+    required this.minPrice,
     this.items = const [],
   });
 
@@ -23,6 +25,14 @@ class CartModel {
       return items.map((e) => e.totalAmount).reduce((value, element) => value + element);
     }
     return 0;
+  }
+
+  Map<String, dynamic> toLocalStorageMap() {
+    return {
+      "categoryId": categoryId,
+      "minPrice": minPrice,
+      "items": items.map((e) => e.toLocalStorageMap()).toList(),
+    };
   }
 }
 
@@ -64,6 +74,15 @@ class CartItem {
       "add_ons": additionalItem.map((e) => e.toMap()).toList(),
     };
   }
+
+  Map<String, dynamic> toLocalStorageMap() {
+    return {
+      "serviceId": service.id,
+      "quantity": quantity,
+      "totalPrice": totalPrice,
+      "additionalItem": additionalItem.map((e) => e.toLocalStorageMap()).toList(),
+    };
+  }
 }
 
 class AdditionalCartItem {
@@ -80,6 +99,13 @@ class AdditionalCartItem {
   Map<String, dynamic> toMap() {
     return {
       "add_on_id": addOnModal.id,
+      "quantity": quantity,
+    };
+  }
+
+  Map<String, dynamic> toLocalStorageMap() {
+    return {
+      "addonId": addOnModal.id,
       "quantity": quantity,
     };
   }

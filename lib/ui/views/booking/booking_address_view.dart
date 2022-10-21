@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:socspl/core/modal/address/user_address_model.dart';
 import 'package:socspl/core/modal/city_modal.dart';
+import 'package:socspl/core/utils/string_extension.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/core/view_modal/user/user_view_model.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
@@ -22,10 +23,12 @@ import '../../shared/navigation/navigation.dart';
 import '../../shared/ui_helpers.dart';
 import '../../widgets/custom/custom_button.dart';
 import '../../widgets/custom/custom_text_field.dart';
-import 'booking_date_view.dart';
 
 class BookingAddressView extends StatefulWidget {
-  const BookingAddressView({Key? key}) : super(key: key);
+  final UserAddressModel? userAddress;
+  final VoidCallback onTap;
+
+  const BookingAddressView({Key? key, this.userAddress, required this.onTap}) : super(key: key);
 
   @override
   State<BookingAddressView> createState() => _BookingAddressViewState();
@@ -56,9 +59,21 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
   void initState() {
     super.initState();
     final modal = context.read<HomeViewModal>();
-    _currentLatLng = modal.currentLatLng;
-    _addressNfy.value = modal.currentAddress;
-    _fetchLocation();
+    if (widget.userAddress == null) {
+      _currentLatLng = modal.currentLatLng;
+      _addressNfy.value = modal.currentAddress;
+      _fetchLocation();
+    } else {
+      _currentLatLng = widget.userAddress!.latLng;
+      _addressNfy.value = widget.userAddress!.formattedAddress;
+      _fetchLocation();
+      _nameCtrl.text = widget.userAddress!.name;
+      _mobileCtrl.text = widget.userAddress!.mobile;
+      _houseNoCtrl.text = widget.userAddress!.flatNo;
+      _areaCtrl.text = widget.userAddress!.area;
+      _landmarkCtrl.text = widget.userAddress!.landmark;
+      _tagNfy.value = widget.userAddress!.type.capitalize();
+    }
     // _animateCtrl = AnimationController(
     //   vsync: this,
     //   duration: const Duration(
@@ -432,25 +447,25 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
                                   if (_city != null) {
                                     _busyNfy.value = true;
                                     var usrAdr = UserAddressModel(
+                                      id: widget.userAddress?.id ?? 0,
                                       name: _nameCtrl.text.trim(),
                                       mobile: _mobileCtrl.text.trim(),
                                       flatNo: _houseNoCtrl.text.trim(),
                                       area: _areaCtrl.text.trim(),
                                       landmark: _landmarkCtrl.text.trim(),
                                       latLng: _currentLatLng,
-                                      pinCode: _pinCode.isNotEmpty?_pinCode:"N/A",
+                                      pinCode: _pinCode.isNotEmpty ? _pinCode : "N/A",
                                       cityId: _city!.id,
                                       type: _tagNfy.value.toLowerCase(),
                                     );
-                                    final res = model.addUserAddress(usrAdr);
+                                    final res = widget.userAddress != null
+                                        ? model.updateUserAddress(widget.userAddress!, usrAdr)
+                                        : model.addUserAddress(usrAdr);
                                     res.then((value) {
                                       if (value.status == ApiStatus.success) {
+                                        context.read<UserViewModel>().fetchAddresses(notify: true);
                                         context.read<BookingViewModel>().userAddress = value.data;
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) => const BookingDateView(),
-                                          ),
-                                        );
+                                        widget.onTap();
                                       } else {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
@@ -506,7 +521,7 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
       _city ??=
           await modal.checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
     }
-      _busyNfy.value = false;
+    _busyNfy.value = false;
   }
 
   void _updateCameraView(LatLng latLng) async {

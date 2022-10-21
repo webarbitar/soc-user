@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socspl/core/modal/city_modal.dart';
+
+import '../../modal/cart/cart_model.dart';
 
 class Storage {
   Storage._();
@@ -28,6 +31,18 @@ class Storage {
     print(tokenVal);
     await pref.setString("token", tokenVal);
     await pref.setBool("isLoggedIn", true);
+  }
+
+  List<Map<String, dynamic>> get carts =>
+      pref.getStringList("carts")?.map((e) => jsonDecode(e) as Map<String, dynamic>).toList() ?? [];
+
+  void updateLocalCart(List<CartModel> list) async {
+    await pref.setStringList("carts", list.map((e) => jsonEncode(e.toLocalStorageMap())).toList());
+    print('update to cart');
+    print('*******');
+    print('*******');
+    print('*******');
+    print(Storage.instance.pref.getStringList("carts"));
   }
 
   Future<void> setLocation({

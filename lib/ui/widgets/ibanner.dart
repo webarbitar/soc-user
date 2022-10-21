@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:socspl/core/modal/banner/banner_modal.dart';
 import 'package:socspl/core/modal/banner/promo_banner.dart';
+import 'package:socspl/ui/views/service/service_details_view.dart';
 import 'package:socspl/ui/views/service/service_view.dart';
 
 import '../../core/modal/banner.dart';
@@ -20,7 +21,7 @@ class IBanner extends StatefulWidget {
   final Function(String id, String heroId, String image) callback;
   final int seconds;
 
-  IBanner(this.banner,
+  const IBanner(this.banner,
       {Key? key,
       this.width = 100,
       this.height = 100,
@@ -41,7 +42,7 @@ class IBanner extends StatefulWidget {
 class _IBannerState extends State<IBanner> {
   int realCountPage = 0;
   var _currentPage = 1000;
-  var _controller = PageController(initialPage: 1000, keepPage: false, viewportFraction: 0.79);
+  final _controller = PageController(initialPage: 1000, keepPage: false, viewportFraction: 0.79);
 
   Timer? _timer;
 
@@ -49,8 +50,8 @@ class _IBannerState extends State<IBanner> {
     _timer = Timer.periodic(
       Duration(seconds: widget.seconds),
       (Timer timer) {
-        int _page = _currentPage + 1;
-        _controller.animateToPage(_page, duration: const Duration(seconds: 1), curve: Curves.ease);
+        int page = _currentPage + 1;
+        _controller.animateToPage(page, duration: const Duration(seconds: 1), curve: Curves.ease);
       },
     );
   }
@@ -78,51 +79,52 @@ class _IBannerState extends State<IBanner> {
   }
 
   _image(BannerModal item, int index) {
-    var _id = UniqueKey().toString();
+    var id = UniqueKey().toString();
     return InkWell(
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ServiceView(
+              builder: (context) => ServiceDetailsView(
                 categoryId: item.categoryId,
-                childCategoryId: item.childCategoryId,
+                serviceId: item.serviceId,
               ),
             ),
           );
         }, // needed
         child: Stack(
           children: <Widget>[
-            Container(
-                width: widget.width,
-                height: widget.height,
-                child: Hero(
-                    tag: _id,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(widget.radius)),
-                      child: Container(
-                        child: //Image.network(item.serverImage, fit: BoxFit.cover)
-                            CachedNetworkImage(
-                          placeholder: (context, url) => UnconstrainedBox(
-                              child: Container(
-                            alignment: Alignment.center,
-                            width: 40,
-                            height: 40,
-                            child: const CircularProgressIndicator(),
-                          )),
-                          imageUrl: item.imageUrl,
-                          imageBuilder: (context, imageProvider) => Container(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: imageProvider,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => const Icon(Icons.error),
+            SizedBox(
+              width: widget.width,
+              height: widget.height,
+              child: Hero(
+                tag: id,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(widget.radius)),
+                  child: CachedNetworkImage(
+                    placeholder: (context, url) => UnconstrainedBox(
+                        child: Container(
+                      alignment: Alignment.center,
+                      width: 40,
+                      height: 40,
+                      child: const CircularProgressIndicator(),
+                    )),
+                    imageUrl: item.imageUrl,
+                    imageBuilder: (context, imageProvider) => Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ))),
+                    ),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                    height: widget.height,
+                    width: widget.width,
+                  ),
+                ),
+              ),
+            ),
           ],
         ));
   }
@@ -166,7 +168,7 @@ class _IBannerState extends State<IBanner> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
+        SizedBox(
           width: widget.width,
           height: widget.height,
           child: PageView.builder(
@@ -208,7 +210,7 @@ class _IBannerState extends State<IBanner> {
             },
           ),
         ),
-        Container(
+        SizedBox(
           height: widget.height,
           child: Align(
             alignment: Alignment.bottomRight,
@@ -239,7 +241,7 @@ class PromoBanner extends StatefulWidget {
   final Function(String id, String heroId, String image) callback;
   final int seconds;
 
-  PromoBanner(this.banner,
+  const PromoBanner(this.banner,
       {Key? key,
       this.width = 100,
       this.height = 100,
@@ -297,49 +299,47 @@ class _PromoBannerState extends State<PromoBanner> {
   }
 
   _image(PromoBannerModal item, int index) {
-    var _id = UniqueKey().toString();
+    var id = UniqueKey().toString();
     return InkWell(
         onTap: () {
           // widget.callback(item.id, _id, item.serverImage);
           FocusManager.instance.primaryFocus?.unfocus();
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ServiceView(
-                childCategoryId: item.childCategoryId,
+              builder: (context) => ServiceDetailsView(
+                categoryId: item.categoryId,
+                serviceId: item.serviceId,
               ),
             ),
           );
         }, // needed
         child: Stack(
           children: <Widget>[
-            Container(
+            SizedBox(
                 width: widget.width,
                 height: widget.height,
                 child: Hero(
-                    tag: _id,
+                    tag: id,
                     child: ClipRRect(
                       borderRadius: BorderRadius.all(Radius.circular(widget.radius)),
-                      child: Container(
-                        child: //Image.network(item.serverImage, fit: BoxFit.cover)
-                            CachedNetworkImage(
-                          placeholder: (context, url) => UnconstrainedBox(
-                              child: Container(
-                            alignment: Alignment.center,
-                            width: 40,
-                            height: 40,
-                            child: const CircularProgressIndicator(),
-                          )),
-                          imageUrl: item.imageUrl,
-                          imageBuilder: (context, imageProvider) => Container(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: imageProvider,
-                                fit: BoxFit.cover,
-                              ),
+                      child: CachedNetworkImage(
+                        placeholder: (context, url) => UnconstrainedBox(
+                            child: Container(
+                          alignment: Alignment.center,
+                          width: 40,
+                          height: 40,
+                          child: const CircularProgressIndicator(),
+                        )),
+                        imageUrl: item.imageUrl,
+                        imageBuilder: (context, imageProvider) => Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          errorWidget: (context, url, error) => const Icon(Icons.error),
                         ),
+                        errorWidget: (context, url, error) => const Icon(Icons.error),
                       ),
                     ))),
           ],
@@ -385,7 +385,7 @@ class _PromoBannerState extends State<PromoBanner> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
+        SizedBox(
           width: widget.width,
           height: widget.height,
           child: PageView.builder(
@@ -427,7 +427,7 @@ class _PromoBannerState extends State<PromoBanner> {
             },
           ),
         ),
-        Container(
+        SizedBox(
             height: widget.height,
             child: Align(
                 alignment: Alignment.bottomRight,

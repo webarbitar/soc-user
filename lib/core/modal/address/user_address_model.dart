@@ -17,7 +17,8 @@ class UserAddressModel {
   String updatedAt;
 
   UserAddressModel(
-      {required this.name,
+      {required this.id,
+      required this.name,
       required this.mobile,
       required this.flatNo,
       required this.area,
@@ -26,8 +27,7 @@ class UserAddressModel {
       required this.latLng,
       required this.cityId,
       required this.type})
-      : id = 0,
-        userId = 0,
+      : userId = 0,
         status = "",
         createdAt = "",
         updatedAt = "";

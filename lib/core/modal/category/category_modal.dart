@@ -4,6 +4,7 @@ class CategoryModal {
   int id;
   String name;
   String description;
+  int? minOrderPrice;
   String image;
   String imageUrl;
   String? video;
@@ -17,6 +18,7 @@ class CategoryModal {
       : id = json["id"],
         name = json["name"],
         description = json["description"] ?? "",
+        minOrderPrice = json["min_order_price"],
         image = json["image"],
         imageUrl = json["image_url"],
         video = json["video"],

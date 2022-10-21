@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:socspl/ui/views/booking/booking_details_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:socspl/core/constance/style.dart';
 import 'package:socspl/core/enum/api_status.dart';
-import 'package:socspl/core/modal/booking/BookedServiceModel.dart';
+import 'package:socspl/core/modal/booking/booked_service_model.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
@@ -111,12 +112,23 @@ class _PendingBookingWidgetState extends State<PendingBookingWidget> {
             ),
           );
         }
-        return Column(
-          children: [
-            ..._bookedServices.map((data) {
-              return BookedServiceCardWidget(data: data);
-            })
-          ],
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              ..._bookedServices.map((data) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => BookingDetailsView(id: data.id),
+                      ),
+                    );
+                  },
+                  child: BookedServiceCardWidget(data: data),
+                );
+              })
+            ],
+          ),
         );
       },
     );
@@ -165,12 +177,23 @@ class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
             ),
           );
         }
-        return Column(
-          children: [
-            ..._bookedServices.map((data) {
-              return BookedServiceCardWidget(data: data);
-            })
-          ],
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              ..._bookedServices.map((data) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => BookingDetailsView(id: data.id),
+                      ),
+                    );
+                  },
+                  child: BookedServiceCardWidget(data: data),
+                );
+              })
+            ],
+          ),
         );
       },
     );
@@ -193,7 +216,7 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
     super.initState();
     final model = context.read<BookingViewModel>();
     _busyNfy.value = true;
-    model.fetchConfirmBooking().then((value) {
+    model.fetchCompletedBooking().then((value) {
       if (value.status == ApiStatus.success) {
         _bookedServices = value.data!;
       }
@@ -219,12 +242,23 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
             ),
           );
         }
-        return Column(
-          children: [
-            ..._bookedServices.map((data) {
-              return BookedServiceCardWidget(data: data);
-            })
-          ],
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              ..._bookedServices.map((data) {
+                return InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => BookingDetailsView(id: data.id),
+                      ),
+                    );
+                  },
+                  child: BookedServiceCardWidget(data: data),
+                );
+              })
+            ],
+          ),
         );
       },
     );

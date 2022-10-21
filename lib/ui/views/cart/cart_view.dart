@@ -6,6 +6,7 @@ import 'package:socspl/core/utils/string_extension.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/core/view_modal/cart/cart_view_model.dart';
 import 'package:socspl/core/view_modal/user/user_view_model.dart';
+import 'package:socspl/ui/shared/messenger/util.dart';
 import 'package:socspl/ui/shared/ui_helpers.dart';
 import 'package:socspl/ui/views/auth/login_page_view.dart';
 import 'package:socspl/ui/widgets/custom/custom_button.dart';
@@ -55,21 +56,28 @@ class _CartViewState extends State<CartView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Summary"),
+        title: const Text("Cart Summary"),
         backgroundColor: Colors.white,
-        elevation: 1.0,
+        elevation: 0.6,
+        centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Consumer(
-                builder: (context, CartViewModel model, _) {
-                  return Column(
+      body: Consumer(
+        builder: (context, CartViewModel model, _) {
+          if (model.currentCart == null) {
+            return const Center(
+              child: Text("Your cart is empty"),
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       UIHelper.verticalSpaceMedium,
-                      ...model.currentCart.items.map(
+                      ...model.currentCart!.items.map(
                         (data) {
                           return Column(
                             children: [
@@ -156,6 +164,7 @@ class _CartViewState extends State<CartView> {
                                                   InkWell(
                                                     onTap: () {
                                                       if (cart.additionalItem.isNotEmpty) {
+                                                        showServiceModalView(data.service);
                                                       } else {
                                                         model.increaseServiceQty(cart);
                                                       }
@@ -288,34 +297,38 @@ class _CartViewState extends State<CartView> {
                       Divider(thickness: 6, color: Colors.grey.shade200),
                       UIHelper.verticalSpaceSmall,
                     ],
-                  );
-                },
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(14.0),
-            child: SizedBox(
-              width: double.maxFinite,
-              height: 45,
-              child: ElevatedButton(
-                onPressed: () {
-                  showAddressModalView();
-                },
-                child: const Text(
-                  "Add address and slot",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: "Montserrat",
-                    fontSize: 14,
-                    height: 1.3,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+              Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: SizedBox(
+                  width: double.maxFinite,
+                  height: 45,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (model.hasValidMinOrderPrice == null) {
+                        showAddressModalView();
+                      } else {
+                        messageError(context, model.hasValidMinOrderPrice!);
+                      }
+                    },
+                    child: const Text(
+                      "Add address and slot",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: "Montserrat",
+                        fontSize: 14,
+                        height: 1.3,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -335,7 +348,7 @@ class _CartViewState extends State<CartView> {
       ),
       builder: (context) {
         return AddOnViewWidget(
-          data: data,
+          serviceId: data.id,
           redirectRoute: const CartView(),
         );
       },
@@ -377,7 +390,13 @@ class _CartViewState extends State<CartView> {
                                 UIHelper.verticalSpaceMedium,
                                 InkWell(
                                   onTap: () {
-                                    Navigation.instance.navigate("/booking-address");
+                                    Navigation.instance.navigate("/booking-address", args: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => const BookingDateView(),
+                                        ),
+                                      );
+                                    });
                                   },
                                   child: Row(
                                     children: const [

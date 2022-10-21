@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:socspl/core/modal/category/add_on_modal.dart';
@@ -117,7 +118,7 @@ class CategoryService with ServiceMixin {
           "$serviceCategory?category_id=$categoryId&sub_category_id=$subCategoryId&child_category_id=$childCategoryId&search=$search&city_id=$cityId"),
       headers: header,
     );
-    print(res.body);
+    log(res.body);
     switch (res.statusCode) {
       case 200:
         final jsonData = jsonDecode(res.body);

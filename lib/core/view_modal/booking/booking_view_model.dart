@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:socspl/core/modal/address/user_address_model.dart';
+import 'package:socspl/core/modal/booking/booked_service_model.dart';
 import 'package:socspl/core/modal/response_modal.dart';
 import 'package:socspl/core/modal/service/service_booking.dart';
 import 'package:socspl/core/modal/time_slot_model.dart';
@@ -36,9 +39,11 @@ class BookingViewModel extends BaseViewModal {
     notifyListeners();
   }
 
-  Future<ResponseModal> bookService(ServiceBooking data) async {
+  Future<ResponseModal<BookedServiceModel>> bookService(ServiceBooking data) async {
+    print(jsonEncode(data.toMap()));
     final res = await _bookingService.bookServices(data.toMap());
     if (res.status == ApiStatus.success) {}
+    // return ResponseModal.error(message: "dsf");
     return res;
   }
 
@@ -51,6 +56,10 @@ class BookingViewModel extends BaseViewModal {
   }
 
   Future<ResponseModal> fetchCompletedBooking() async {
-    return await _bookingService.fetchConfirmedBooking(1);
+    return await _bookingService.fetchCompletedBooking(1);
+  }
+
+  Future<ResponseModal> fetchBookingDetailsById(int id) async {
+    return await _bookingService.fetchBookingDetailsById(id);
   }
 }

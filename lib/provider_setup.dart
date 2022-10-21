@@ -1,5 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:socspl/core/services/category/category_service.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/core/view_modal/cart/cart_view_model.dart';
 import 'package:socspl/core/view_modal/home/home_view_modal.dart';
@@ -21,6 +22,7 @@ List<SingleChildWidget> providers = [
 List<SingleChildWidget> independentServices = [
   Provider(create: (_) => HomeService()),
   Provider(create: (_) => UserService()),
+  Provider(create: (_) => CategoryService()),
   Provider(create: (_) => MapService()),
   Provider(create: (_) => CartService()),
   Provider(create: (_) => BookingService()),
@@ -41,10 +43,13 @@ List<SingleChildWidget> dependentServices = [
     update: (context, MapService mapService, HomeViewModal? homeModal) =>
         homeModal!..mapService = mapService,
   ),
-  ChangeNotifierProxyProvider<CartService, CartViewModel>(
+  ChangeNotifierProxyProvider2<CartService, CategoryService, CartViewModel>(
     create: (_) => CartViewModel(),
-    update: (context, CartService cartService, CartViewModel? cartModel) =>
-        cartModel!..cartService = cartService,
+    update: (context, CartService cartService, CategoryService categoryService,
+            CartViewModel? cartModel) =>
+        cartModel!
+          ..cartService = cartService
+          ..categoryService = categoryService,
   ),
   ChangeNotifierProxyProvider<BookingService, BookingViewModel>(
     create: (_) => BookingViewModel(),

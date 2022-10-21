@@ -109,7 +109,7 @@ class OtpView extends StatelessWidget {
                           res.then((value) {
                             if (value.status == ApiStatus.success) {
                               messageOk(context, value.message);
-                              Navigation.instance.navigateAndRemoveUntil("/login");
+                              Navigation.instance.navigateAndRemoveUntil("/home");
                             } else {
                               messageError(context, value.message);
                             }

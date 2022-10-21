@@ -231,7 +231,7 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                               address: _addressNfy.value,
                               city: modal.city!,
                             );
-                            modal.initHomeModule(initLocation: false);
+                            modal.initHomeModule(context, initLocation: false);
                             Navigation.instance.goBack();
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(

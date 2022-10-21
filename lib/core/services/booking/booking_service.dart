@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:socspl/core/modal/booking/BookedServiceModel.dart';
+import 'package:socspl/core/modal/booking/booked_service_model.dart';
 import 'package:socspl/core/modal/time_slot_model.dart';
+import 'package:socspl/env.dart';
 import '../../constance/end_points.dart';
+import '../../modal/booking/booked_service_details_model.dart';
 import '../../modal/response_modal.dart';
 import '../../modal/service/service_booking.dart';
 import '../../utils/storage/storage.dart';
@@ -36,7 +38,7 @@ class BookingService with ServiceMixin {
     }
   }
 
-  Future<ResponseModal> bookServices(Map<String, dynamic> data) async {
+  Future<ResponseModal<BookedServiceModel>> bookServices(Map<String, dynamic> data) async {
     var request = http.Request('POST', parseUri(booking));
     var header = {
       "Authorization": "Bearer ${_storage.token}",
@@ -53,8 +55,8 @@ class BookingService with ServiceMixin {
       case 200:
         final jsonData = jsonDecode(res);
         if (jsonData["status"] == true) {
-          // final data = ServiceBooking.fromJson(jsonData["data"]);
-          return ResponseModal.success(message: jsonData["message"]);
+          final data = BookedServiceModel.fromJson(jsonData["data"]);
+          return ResponseModal.success(message: jsonData["message"], data: data);
         } else {
           return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);
         }
@@ -126,6 +128,30 @@ class BookingService with ServiceMixin {
         final jsonData = jsonDecode(res);
         if (jsonData["status"] == true) {
           final data = BookedServiceModel.fromJsonList(jsonData["data"] ?? []);
+          return ResponseModal.success(message: jsonData["message"], data: data);
+        } else {
+          return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);
+        }
+      default:
+        return streamErrorResponse(response);
+    }
+  }
+
+  Future<ResponseModal<BookedServiceDetailsModel>> fetchBookingDetailsById(int id) async {
+    var request = http.Request('GET', parseUri("$baseUrl/booking/$id"));
+    var header = {
+      "Authorization": "Bearer ${_storage.token}",
+      'Content-Type': 'application/json',
+    };
+    request.headers.addAll(header);
+    http.StreamedResponse response = await request.send();
+    final res = await response.stream.bytesToString();
+    print(res);
+    switch (response.statusCode) {
+      case 200:
+        final jsonData = jsonDecode(res);
+        if (jsonData["status"] == true) {
+          final data = BookedServiceDetailsModel.fromJson(jsonData["data"] ?? []);
           return ResponseModal.success(message: jsonData["message"], data: data);
         } else {
           return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);

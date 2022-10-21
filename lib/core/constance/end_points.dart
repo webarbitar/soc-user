@@ -6,6 +6,7 @@ const register = "$baseUrl/register";
 const loginOtp = "$baseUrl/login_otp";
 const login = "$baseUrl/login";
 const address = "$baseUrl/address";
+const profile = "$baseUrl/profile";
 
 const banner = "$baseUrl/banners";
 
@@ -13,11 +14,14 @@ const offerBanner = "$baseUrl/offer_banners";
 
 const workBanner = "$baseUrl/work_banners";
 
+const homeBanner = "$baseUrl/home_banners";
+
 ///  ======== Home Url ========
 const trendingCategory = "$baseUrl/trending_categories";
 
 ///  ======== Home Url ========
 const cities = "$baseUrl/cities";
+const testimonials = "$baseUrl/testimonials";
 
 ///  ======== Categories Url ========
 const category = "$baseUrl/categories";
