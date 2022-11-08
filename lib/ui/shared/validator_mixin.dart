@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 mixin ValidatorMixin {
   String? emptyFieldValidation(data) {
     if (data!.isEmpty) {
@@ -47,3 +50,21 @@ mixin ValidatorMixin {
     return null;
   }
 }
+
+void showErrorMessage(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    backgroundColor: Colors.red,
+    textColor: Colors.white,
+  );
+}
+
+void showSuccessMessage(String message) {
+  Fluttertoast.showToast(
+    msg: message,
+    backgroundColor: Colors.green,
+    textColor: Colors.white,
+  );
+}
+
+

@@ -27,7 +27,11 @@ class _SplashScreenViewState extends State<SplashScreenView> {
     if (isLogin) {
       Navigation.instance.navigateAndReplace("/home");
     } else {
-      Navigation.instance.navigateAndReplace("/landing-view");
+      if (Storage.instance.showOnboarding) {
+        Navigation.instance.navigateAndReplace("/landing-view");
+      } else {
+        Navigation.instance.navigateAndRemoveUntil("/login");
+      }
     }
   }
 
@@ -39,13 +43,14 @@ class _SplashScreenViewState extends State<SplashScreenView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              height: 80,
-              width: 80,
+              width: 180,
               child: Image.asset(
-                "assets/images/logo.png",
+                "assets/images/logo-banner.jpeg",
               ),
             ),
-            UIHelper.verticalSpaceMedium,
+
+            UIHelper.verticalSpaceLarge,
+            UIHelper.verticalSpaceLarge,
             const LoaderWidget(
               color: primaryColor,
               size: 25,

@@ -41,7 +41,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     /// Home page routes
     ///
     case '/home':
-      return FadeTransitionPageRouteBuilder(page: const HomeView());
+      return FadeTransitionPageRouteBuilder(
+        page: HomeView(
+          pageIndex: settings.arguments as int?,
+        ),
+      );
     case '/sub-category':
       return FadeTransitionPageRouteBuilder(
         page: SubCategoryView(category: settings.arguments as SubCategoryModal),

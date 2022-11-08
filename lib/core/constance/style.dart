@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 bool darkMode = false;
 OnDemandServiceTheme theme = OnDemandServiceTheme();
 
-const primaryColor = Colors.orange;
+const primaryColor = Colors.blue;
 const mainColorGray = Color(0xfffafafa);
 const blackColorTitleBkg = Color(0xff202020);
 const backgroundColor = Color.fromRGBO(246, 247, 251, 1);

@@ -17,23 +17,25 @@ Color getColor(String? boardColor) {
   return Colors.red;
 }
 
-messageError(BuildContext context, String _text) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+messageError(BuildContext context, String text) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
       backgroundColor: Colors.red,
       duration: const Duration(seconds: 5),
       content: Text(
-        _text,
+        text,
         style: const TextStyle(color: Colors.white),
-        textAlign: TextAlign.center,
-      )));
+      ),
+    ),
+  );
 }
 
-messageOk(BuildContext context, String _text) {
+messageOk(BuildContext context, String text) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       backgroundColor: primaryColor,
       duration: const Duration(seconds: 5),
       content: Text(
-        _text,
+        text,
         style: const TextStyle(color: Colors.white),
         textAlign: TextAlign.center,
       )));
@@ -46,14 +48,14 @@ Color toColor(String? boardColor) {
   return Colors.red;
 }
 
-String getTextByLocale(List<StringData> _data) {
+String getTextByLocale(List<StringData> data) {
   // for (var item in _data)
   //   if (item.code == localSettings.locale)
   //     return item.text;
-  for (var item in _data) {
+  for (var item in data) {
     if (item.code == "en") return item.text;
   }
-  if (_data.isNotEmpty) return _data[0].text;
+  if (data.isNotEmpty) return data[0].text;
   return "";
 }
 
@@ -84,10 +86,10 @@ bool validateEmail(String value) {
   }
 }
 
-String checkPhoneNumber(String _phoneText) {
+String checkPhoneNumber(String phoneText) {
   String s = "";
-  for (int i = 0; i < _phoneText.length; i++) {
-    int c = _phoneText.codeUnitAt(i);
+  for (int i = 0; i < phoneText.length; i++) {
+    int c = phoneText.codeUnitAt(i);
     if ((c == "1".codeUnitAt(0)) ||
         (c == "2".codeUnitAt(0)) ||
         (c == "3".codeUnitAt(0)) ||
@@ -115,12 +117,12 @@ openUrl(String uri) async {
   if (await canLaunch(uri)) await launch(uri);
 }
 
-String getDateTimeString(DateTime _time) {
-  return df.DateFormat("dd.MM.yyyy").format(_time).toString() +
+String getDateTimeString(DateTime time) {
+  return df.DateFormat("dd.MM.yyyy").format(time).toString() +
       " " +
-      df.DateFormat("HH:mm").format(_time).toString();
+      df.DateFormat("HH:mm").format(time).toString();
 }
 
-String getTimeString(DateTime _time) {
-  return df.DateFormat("HH:mm").format(_time).toString();
+String getTimeString(DateTime time) {
+  return df.DateFormat("HH:mm").format(time).toString();
 }

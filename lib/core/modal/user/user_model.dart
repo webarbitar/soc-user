@@ -18,11 +18,11 @@ class UserModel {
 
   UserModel.fromJson(Map<String, dynamic> json)
       : id = json['id'],
-        name = json['name'],
-        email = json['email'],
-        mobile = json['mobile'],
-        role = json['role'],
-        status = json['status'],
+        name = json['name']??"",
+        email = json['email']??"",
+        mobile = json['mobile']??"",
+        role = json['role']??"",
+        status = json['status']??"",
         image = json['image'] ?? "",
         updateMobile = json['update_mobile'].toString(),
         verifiedByVendor = json['verified_by_vendor'],

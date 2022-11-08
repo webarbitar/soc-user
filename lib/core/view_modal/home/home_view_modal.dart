@@ -33,7 +33,7 @@ import '../../utils/storage/storage.dart';
 import '../cart/cart_view_model.dart';
 
 class HomeViewModal extends BaseViewModal with PermissionHandlerService {
-  HomeService _homeService = HomeService();
+  final HomeService _homeService = HomeService();
   CategoryService categoryService = CategoryService();
   BannerService bannerService = BannerService();
   late MapService _mapService;

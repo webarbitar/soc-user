@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
 class TimeSlotModel {
   int id;
   int categoryId;
-  String timeSlot;
+  DateTime timeSlot;
   DateTime createdAt;
   DateTime updatedAt;
 
@@ -16,7 +19,8 @@ class TimeSlotModel {
   TimeSlotModel.fromJson(Map<String, dynamic> json)
       : id = json["id"],
         categoryId = json["category_id"],
-        timeSlot = json["time_slot"].toString().split(":").getRange(0, 2).join(":"),
+        timeSlot =
+            DateTime.parse("${DateTime.now().toString().split(" ")[0]} ${json["time_slot"]}"),
         createdAt = DateTime.parse(json["created_at"]),
         updatedAt = DateTime.parse(json["updated_at"]);
 

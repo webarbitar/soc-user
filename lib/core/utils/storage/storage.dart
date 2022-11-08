@@ -19,6 +19,8 @@ class Storage {
 
   bool get isLogin => pref.getBool("isLoggedIn") ?? false;
 
+  bool get showOnboarding => pref.getBool("showOnboarding") ?? true;
+
   String get token => pref.getString("token") ?? "";
 
   String? get address => pref.getString("address");
@@ -26,6 +28,10 @@ class Storage {
   String? get city => pref.getString("city");
 
   LatLng get latLng => LatLng(pref.getDouble("lat") ?? 0.0, pref.getDouble("lng") ?? 0.0);
+
+  Future<void> getStartOnboarding() async {
+    await pref.setBool("showOnboarding", false);
+  }
 
   Future<void> setUser(String tokenVal) async {
     print(tokenVal);

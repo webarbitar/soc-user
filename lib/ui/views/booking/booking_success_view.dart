@@ -1,13 +1,58 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+import 'package:socspl/core/enum/api_status.dart';
+import 'package:socspl/core/modal/response_modal.dart';
+import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/ui/shared/navigation/navigation.dart';
 import 'package:socspl/ui/shared/ui_helpers.dart';
+import 'package:socspl/ui/shared/validator_mixin.dart';
 import 'package:socspl/ui/widgets/custom/custom_button.dart';
 
-class BookingSuccessView extends StatelessWidget {
+class BookingSuccessView extends StatefulWidget {
+  final int id;
   final String bookingId;
 
-  const BookingSuccessView({Key? key, required this.bookingId}) : super(key: key);
+  const BookingSuccessView({
+    Key? key,
+    required this.bookingId,
+    required this.id,
+  }) : super(key: key);
+
+  @override
+  State<BookingSuccessView> createState() => _BookingSuccessViewState();
+}
+
+class _BookingSuccessViewState extends State<BookingSuccessView> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    intiBookingDetailsFetcher();
+  }
+
+  void intiBookingDetailsFetcher() {
+    bool pauseReq = false;
+    final model = context.read<BookingViewModel>();
+    ResponseModal res;
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) async {
+      if (!pauseReq) {
+        pauseReq = true;
+        res = await model.fetchBookingDetailsById(widget.id, fetchService: false);
+        if (res.status == ApiStatus.success) {
+          if (model.bookingDetails!.status == "confirmed") {
+            showSuccessMessage("Your request have been accepted");
+            Navigation.instance.navigateAndRemoveUntil("/home", args: 3);
+            _timer?.cancel();
+          }
+        }
+        pauseReq = false;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +75,25 @@ class BookingSuccessView extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Lottie.asset("assets/lottie/book-now.json", width: 180, repeat: false),
+                    Lottie.asset(
+                      "assets/lottie/waiting.json",
+                      width: 180,
+                    ),
+                    UIHelper.verticalSpaceMedium,
+                    const Text(
+                      "Waiting for provider approval",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                     UIHelper.verticalSpaceMedium,
                     Text(
-                      "Your booking with id $bookingId has been successfully placed",
+                      "Your booking with id ${widget.bookingId} has been placed successfully",
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontFamily: "Montserrat",
                         fontWeight: FontWeight.w500,
                       ),
@@ -49,7 +107,7 @@ class BookingSuccessView extends StatelessWidget {
               CustomButton(
                 text: "Go to Home",
                 onTap: () {
-                  Navigation.instance.navigateAndRemoveUntil("/home");
+                  Navigation.instance.navigateAndRemoveUntil("/home", args: 3);
                 },
               )
             ],
@@ -57,5 +115,11 @@ class BookingSuccessView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _timer?.cancel();
   }
 }

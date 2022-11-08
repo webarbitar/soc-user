@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:socspl/core/utils/string_extension.dart';
+import 'package:socspl/ui/shared/validator_mixin.dart';
 import 'package:socspl/ui/views/booking/booking_details_view.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:socspl/core/constance/style.dart';
@@ -33,7 +35,7 @@ class _HomeBookingViewState extends State<HomeBookingView> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(
@@ -45,12 +47,16 @@ class _HomeBookingViewState extends State<HomeBookingView> {
               fontFamily: "Montserrat",
               fontSize: 14,
             ),
+            isScrollable: true,
             tabs: [
               Tab(
                 child: Text("Pending"),
               ),
               Tab(
                 child: Text("Confirmed"),
+              ),
+              Tab(
+                child: Text("Ongoing"),
               ),
               Tab(
                 child: Text("Completed"),
@@ -62,6 +68,7 @@ class _HomeBookingViewState extends State<HomeBookingView> {
           children: [
             PendingBookingWidget(),
             ConfirmedBookingWidget(),
+            OngoingBookingWidget(),
             CompletedBookingWidget(),
           ],
         ),
@@ -79,16 +86,19 @@ class PendingBookingWidget extends StatefulWidget {
 
 class _PendingBookingWidgetState extends State<PendingBookingWidget> {
   final _busyNfy = ValueNotifier(false);
-  List<BookedServiceModel> _bookedServices = [];
 
   @override
   void initState() {
     super.initState();
+    initPendingBooking();
+  }
+
+  initPendingBooking() {
     final model = context.read<BookingViewModel>();
     _busyNfy.value = true;
     model.fetchPendingBooking().then((value) {
-      if (value.status == ApiStatus.success) {
-        _bookedServices = value.data!;
+      if (value.status == ApiStatus.error) {
+        showErrorMessage(value.message);
       }
       _busyNfy.value = false;
     });
@@ -96,42 +106,47 @@ class _PendingBookingWidgetState extends State<PendingBookingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _busyNfy,
-      builder: (context, bool busy, _) {
-        if (busy) {
-          return const Center(
-            child: LoaderWidget(),
-          );
-        }
-        if (_bookedServices.isEmpty) {
-          return const Center(
-            child: Text(
-              "No booking found. Please book services to view",
-              style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+    return Consumer<BookingViewModel>(builder: (context, model, _) {
+      return ValueListenableBuilder(
+        valueListenable: _busyNfy,
+        builder: (context, bool busy, _) {
+          if (busy) {
+            return const Center(
+              child: LoaderWidget(),
+            );
+          }
+          if (model.pendingBooking.isEmpty) {
+            return const Center(
+              child: Text(
+                "No booking found. Please book services to view",
+                style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+              ),
+            );
+          }
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                ...model.pendingBooking.map((data) {
+                  return InkWell(
+                    onTap: () async {
+                      final res = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => BookingDetailsView(id: data.id),
+                        ),
+                      );
+                      if (res != null && res) {
+                        initPendingBooking();
+                      }
+                    },
+                    child: BookedServiceCardWidget(data: data),
+                  );
+                })
+              ],
             ),
           );
-        }
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              ..._bookedServices.map((data) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => BookingDetailsView(id: data.id),
-                      ),
-                    );
-                  },
-                  child: BookedServiceCardWidget(data: data),
-                );
-              })
-            ],
-          ),
-        );
-      },
-    );
+        },
+      );
+    });
   }
 }
 
@@ -144,6 +159,81 @@ class ConfirmedBookingWidget extends StatefulWidget {
 
 class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
   final _busyNfy = ValueNotifier(false);
+
+  @override
+  void initState() {
+    super.initState();
+    initConfirmedBooking();
+  }
+
+  initConfirmedBooking() {
+    final model = context.read<BookingViewModel>();
+    _busyNfy.value = true;
+    model.fetchConfirmBooking().then(
+      (value) {
+        if (value.status == ApiStatus.error) {
+          showErrorMessage(value.message);
+        }
+        _busyNfy.value = false;
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<BookingViewModel>(builder: (context, model, _) {
+      return ValueListenableBuilder(
+        valueListenable: _busyNfy,
+        builder: (context, bool busy, _) {
+          if (busy) {
+            return const Center(
+              child: LoaderWidget(),
+            );
+          }
+          if (model.confirmBooking.isEmpty) {
+            return const Center(
+              child: Text(
+                "No booking found. Please book services to view",
+                style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+              ),
+            );
+          }
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                ...model.confirmBooking.map((data) {
+                  return InkWell(
+                    onTap: () async {
+                      final res = await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => BookingDetailsView(id: data.id),
+                        ),
+                      );
+                      if (res != null && res) {
+                        initConfirmedBooking();
+                      }
+                    },
+                    child: BookedServiceCardWidget(data: data),
+                  );
+                })
+              ],
+            ),
+          );
+        },
+      );
+    });
+  }
+}
+
+class OngoingBookingWidget extends StatefulWidget {
+  const OngoingBookingWidget({Key? key}) : super(key: key);
+
+  @override
+  State<OngoingBookingWidget> createState() => _OngoingBookingWidgetState();
+}
+
+class _OngoingBookingWidgetState extends State<OngoingBookingWidget> {
+  final _busyNfy = ValueNotifier(false);
   List<BookedServiceModel> _bookedServices = [];
 
   @override
@@ -151,9 +241,9 @@ class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
     super.initState();
     final model = context.read<BookingViewModel>();
     _busyNfy.value = true;
-    model.fetchConfirmBooking().then((value) {
-      if (value.status == ApiStatus.success) {
-        _bookedServices = value.data!;
+    model.fetchOngoingBooking().then((value) {
+      if (value.status == ApiStatus.error) {
+        showErrorMessage(value.message);
       }
       _busyNfy.value = false;
     });
@@ -161,42 +251,44 @@ class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _busyNfy,
-      builder: (context, bool busy, _) {
-        if (busy) {
-          return const Center(
-            child: LoaderWidget(),
-          );
-        }
-        if (_bookedServices.isEmpty) {
-          return const Center(
-            child: Text(
-              "No booking found. Please book services to view",
-              style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+    return Consumer<BookingViewModel>(builder: (context, model, _) {
+      return ValueListenableBuilder(
+        valueListenable: _busyNfy,
+        builder: (context, bool busy, _) {
+          if (busy) {
+            return const Center(
+              child: LoaderWidget(),
+            );
+          }
+          if (model.ongoingBooking.isEmpty) {
+            return const Center(
+              child: Text(
+                "No ongoing booking found. Please book services to view",
+                style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+              ),
+            );
+          }
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                ...model.ongoingBooking.map((data) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => BookingDetailsView(id: data.id),
+                        ),
+                      );
+                    },
+                    child: BookedServiceCardWidget(data: data),
+                  );
+                })
+              ],
             ),
           );
-        }
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              ..._bookedServices.map((data) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => BookingDetailsView(id: data.id),
-                      ),
-                    );
-                  },
-                  child: BookedServiceCardWidget(data: data),
-                );
-              })
-            ],
-          ),
-        );
-      },
-    );
+        },
+      );
+    });
   }
 }
 
@@ -209,7 +301,6 @@ class CompletedBookingWidget extends StatefulWidget {
 
 class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
   final _busyNfy = ValueNotifier(false);
-  List<BookedServiceModel> _bookedServices = [];
 
   @override
   void initState() {
@@ -217,8 +308,8 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
     final model = context.read<BookingViewModel>();
     _busyNfy.value = true;
     model.fetchCompletedBooking().then((value) {
-      if (value.status == ApiStatus.success) {
-        _bookedServices = value.data!;
+      if (value.status == ApiStatus.error) {
+        showErrorMessage(value.message);
       }
       _busyNfy.value = false;
     });
@@ -226,42 +317,44 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _busyNfy,
-      builder: (context, bool busy, _) {
-        if (busy) {
-          return const Center(
-            child: LoaderWidget(),
-          );
-        }
-        if (_bookedServices.isEmpty) {
-          return const Center(
-            child: Text(
-              "No booking found. Please book services to view",
-              style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+    return Consumer<BookingViewModel>(builder: (context, model, _) {
+      return ValueListenableBuilder(
+        valueListenable: _busyNfy,
+        builder: (context, bool busy, _) {
+          if (busy) {
+            return const Center(
+              child: LoaderWidget(),
+            );
+          }
+          if (model.completedBooking.isEmpty) {
+            return const Center(
+              child: Text(
+                "No booking found. Please book services to view",
+                style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+              ),
+            );
+          }
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                ...model.completedBooking.map((data) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => BookingDetailsView(id: data.id),
+                        ),
+                      );
+                    },
+                    child: BookedServiceCardWidget(data: data),
+                  );
+                })
+              ],
             ),
           );
-        }
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              ..._bookedServices.map((data) {
-                return InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => BookingDetailsView(id: data.id),
-                      ),
-                    );
-                  },
-                  child: BookedServiceCardWidget(data: data),
-                );
-              })
-            ],
-          ),
-        );
-      },
-    );
+        },
+      );
+    });
   }
 }
 
@@ -304,7 +397,7 @@ class BookedServiceCardWidget extends StatelessWidget {
                       data.category.name,
                       style: const TextStyle(fontFamily: "Montserrat"),
                     ),
-                    UIHelper.verticalSpaceSmall,
+                    const SizedBox(height: 4),
                     Row(
                       children: [
                         const Icon(
@@ -320,6 +413,18 @@ class BookedServiceCardWidget extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                    UIHelper.verticalSpaceSmall,
+                    Text(
+                      data.status.capitalize(),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontFamily: "Montserrat",
+                        fontWeight: FontWeight.w600,
+                        color: data.status == "rejected" || data.status == "cancelled"
+                            ? Colors.red
+                            : null,
+                      ),
                     ),
                   ],
                 ),
@@ -345,4 +450,14 @@ class BookedServiceCardWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+void loadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return const LoaderWidget();
+    },
+  );
 }

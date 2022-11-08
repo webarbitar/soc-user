@@ -24,6 +24,7 @@ class BookingDateView extends StatefulWidget {
 class _BookingDateViewState extends State<BookingDateView> {
   final _monthFormat = DateFormat("MMM");
   final _dateFormat = DateFormat("yyyy/MM/dd");
+  final _timeFormat = DateFormat("hh:mm");
   final List<DateTime> days = [];
   late DateTime _currentFilter;
 
@@ -54,6 +55,7 @@ class _BookingDateViewState extends State<BookingDateView> {
 
   @override
   Widget build(BuildContext context) {
+    print(now.toString());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Address'),
@@ -157,16 +159,30 @@ class _BookingDateViewState extends State<BookingDateView> {
                                 runSpacing: 14,
                                 children: [
                                   ...model.timerSlots.map((e) {
+                                    bool disable = false;
                                     bool isActive = _selectedTime == e;
+                                    if (_currentFilter
+                                            .compareTo(DateTime(now.year, now.month, now.day)) ==
+                                        0) {
+                                      if (e.timeSlot.isBefore(now.add(const Duration(hours: 1)))) {
+                                        disable = true;
+                                      }
+                                    }
                                     return InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedTime = e;
-                                        });
-                                      },
+                                      onTap: disable
+                                          ? null
+                                          : () {
+                                              setState(() {
+                                                _selectedTime = e;
+                                              });
+                                            },
                                       child: Material(
-                                        color: isActive ? Colors.orange.shade100 : Colors.white,
-                                        elevation: 1.0,
+                                        color: disable
+                                            ? highlightColor
+                                            : isActive
+                                                ? Colors.orange.shade100
+                                                : Colors.white,
+                                        elevation: disable ? 0.0 : 1.0,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(6),
                                           side: BorderSide(
@@ -178,7 +194,7 @@ class _BookingDateViewState extends State<BookingDateView> {
                                           padding: const EdgeInsets.all(14),
                                           child: Center(
                                             child: Text(
-                                              e.timeSlot,
+                                              _timeFormat.format(e.timeSlot),
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w600,
                                                   fontFamily: "Montserrat",
@@ -286,7 +302,7 @@ class _BookingDateViewState extends State<BookingDateView> {
                   const Icon(Icons.timer_sharp),
                   UIHelper.horizontalSpaceSmall,
                   Text(
-                    "${_currentFilter.toString().split(" ")[0]} ${_selectedTime?.timeSlot}",
+                    "${_currentFilter.toString().split(" ")[0]} ${_timeFormat.format(_selectedTime!.timeSlot)}",
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
                       fontFamily: "Montserrat",
@@ -315,7 +331,7 @@ class _BookingDateViewState extends State<BookingDateView> {
                     ServiceBooking(
                       address: model.userAddress!,
                       date: dateFormat.format(_currentFilter),
-                      time: _selectedTime!.timeSlot,
+                      time: _timeFormat.format(_selectedTime!.timeSlot),
                       cart: context.read<CartViewModel>().currentCart!,
                     ),
                   );
@@ -326,6 +342,7 @@ class _BookingDateViewState extends State<BookingDateView> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => BookingSuccessView(
+                            id: value.data!.id,
                             bookingId: value.data!.bookingId,
                           ),
                         ),

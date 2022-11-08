@@ -26,8 +26,11 @@ class CustomNetworkImage extends StatelessWidget {
         width: width?.toInt(),
       ),
       errorBuilder: (context, url, error) {
-        return const Center(
-          child: Text("No image"),
+        return SizedBox(
+          height: height,
+          child: const Center(
+            child: Text("No image"),
+          ),
         );
       },
       fit: fit,

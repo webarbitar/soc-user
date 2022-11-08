@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:socspl/core/utils/storage/storage.dart';
 
 import '../../core/constance/strings.dart';
 import '../../core/constance/style.dart';
@@ -38,6 +39,7 @@ class _LandingPageViewState extends State<LandingPageView> with SingleTickerProv
   ];
 
   void _loginPageNavigation() {
+    Storage.instance.getStartOnboarding();
     Navigation.instance.navigateAndRemoveUntil("/login");
   }
 

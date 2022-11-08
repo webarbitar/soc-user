@@ -359,6 +359,7 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
                                           CustomTextField(
                                             controller: _mobileCtrl,
                                             labelText: "Mobile Number",
+                                            type: TextInputType.number,
                                           ),
                                           UIHelper.verticalSpaceMedium,
                                           CustomTextField(
@@ -455,6 +456,7 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
                                       landmark: _landmarkCtrl.text.trim(),
                                       latLng: _currentLatLng,
                                       pinCode: _pinCode.isNotEmpty ? _pinCode : "N/A",
+                                      address: _addressNfy.value,
                                       cityId: _city!.id,
                                       type: _tagNfy.value.toLowerCase(),
                                     );

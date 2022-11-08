@@ -2,7 +2,7 @@ import '../../env.dart';
 
 ///  ======== User Authentication Url ========
 const registerOtp = "$baseUrl/register_otp";
-const register = "$baseUrl/register";
+const register = "$baseUrl/register_otp_verify";
 const loginOtp = "$baseUrl/login_otp";
 const login = "$baseUrl/login";
 const address = "$baseUrl/address";
@@ -41,7 +41,9 @@ const timeslot = "$baseUrl/time_slots";
 const booking = "$baseUrl/book_service";
 const pendingBooking = "$baseUrl/pending_booking_list";
 const confirmedBooking = "$baseUrl/confirmed_booking_list";
+const ongoingBooking = "$baseUrl/ongoing_booking_list";
 const completedBooking = "$baseUrl/completed_booking_list";
+const bookingCancel = "$baseUrl/cancel_booking";
 
 ///  ======== Google Map Url ========
 const mapGecode = "$mapBaseUrl/geocode/json";

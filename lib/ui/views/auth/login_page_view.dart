@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/enum/api_status.dart';
@@ -195,7 +196,8 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
       return;
     }
     _waits(true);
-    final data = LoginModal(mobile: _phoneCtrl.text);
+    var token = await FirebaseMessaging.instance.getToken();
+    final data = LoginModal(mobile: _phoneCtrl.text, fcmToken: token ?? "");
     final res = modal.sendLoginOtp(data);
     res.then(
       (value) async {
@@ -204,7 +206,12 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
           Navigation.instance.navigate("/otp", args: widget.redirectRoute);
         } else if (value.status == ApiStatus.notFound) {
           modal.isLogin = false;
-          final res2 = await modal.sendRegisterOtp(UserRegistrationModal(mobile: _phoneCtrl.text));
+          final res2 = await modal.sendRegisterOtp(
+            UserRegistrationModal(
+              mobile: _phoneCtrl.text,
+              fcmToken: token ?? "",
+            ),
+          );
           if (res2.status == ApiStatus.success) {
             if (mounted) {
               messageOk(context, value.message);

@@ -199,7 +199,8 @@ class _SubCategoryViewState extends State<SubCategoryView> {
                         });
                       }
                       final filter = homeModel.categoryServices
-                          .where((element) => element.name.toLowerCase().contains(val.toLowerCase()))
+                          .where(
+                              (element) => element.name.toLowerCase().contains(val.toLowerCase()))
                           .toList();
                       _searchFilterNfy.value = filter;
                     } else {

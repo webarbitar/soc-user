@@ -51,10 +51,13 @@ List<SingleChildWidget> dependentServices = [
           ..cartService = cartService
           ..categoryService = categoryService,
   ),
-  ChangeNotifierProxyProvider<BookingService, BookingViewModel>(
+  ChangeNotifierProxyProvider2<BookingService, CategoryService, BookingViewModel>(
     create: (_) => BookingViewModel(),
-    update: (context, BookingService bookingService, BookingViewModel? bookingModel) =>
-        bookingModel!..bookingService = bookingService,
+    update: (context, BookingService bookingService, CategoryService categoryService,
+            BookingViewModel? bookingModel) =>
+        bookingModel!
+          ..bookingService = bookingService
+          ..categoryService = categoryService,
   ),
 ];
 List<SingleChildWidget> uiConsumableServices = [];

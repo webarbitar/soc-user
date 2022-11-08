@@ -40,9 +40,11 @@ class UserService with ServiceMixin {
 
     http.StreamedResponse response = await request.send();
     final res = await response.stream.bytesToString();
+    print(res);
     switch (response.statusCode) {
       case 200:
         final jsonData = jsonDecode(res);
+        print(jsonData);
         if (jsonData["status"] == true) {
           print(jsonData["token"]);
           _storage.setUser(jsonData["token"]);

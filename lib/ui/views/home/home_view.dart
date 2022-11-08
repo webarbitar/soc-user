@@ -1,8 +1,9 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:socspl/core/view_modal/cart/cart_view_model.dart';
+import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
 import 'package:socspl/ui/views/home/component/home_cart_view.dart';
 
 import '../../../core/constance/style.dart';
@@ -12,28 +13,75 @@ import 'component/home_booking_view.dart';
 import 'component/home_menu_view.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({Key? key}) : super(key: key);
+  final int? pageIndex;
+
+  const HomeView({Key? key, this.pageIndex}) : super(key: key);
 
   @override
   State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
-  final PageController _pageController = PageController(initialPage: 0);
+  late final BookingViewModel _bookingViewModel;
+  late final HomeViewModal _homeViewModal;
+  late final PageController _pageController;
   int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    final homeModel = context.read<HomeViewModal>();
-    homeModel.initHomeModule(context);
+    _currentIndex = widget.pageIndex ?? 0;
+    _pageController = PageController(initialPage: _currentIndex);
+    _bookingViewModel = context.read<BookingViewModel>();
+    initFirebasePushNotification();
+    _homeViewModal = context.read<HomeViewModal>();
+    _homeViewModal.initHomeModule(context).then((value) {
+      _bookingViewModel.initOngoingBookingFetcher();
+    });
 
     initLocation();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  void initFirebasePushNotification() async {
+    // FirebaseMessaging.instance;
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      print(token);
+    });
+    NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      print('User granted provisional permission');
+    } else {
+      print('User declined or has not accepted permission');
+    }
+
+    FirebaseMessaging.instance.getInitialMessage().then((message) {
+      print('message click one');
+      print(message?.data);
+      print('***');
+      if (message != null) {
+        // LocalNotificationService.showNotification(message);
+      }
+    });
+
+    FirebaseMessaging.onMessage.listen((message) {
+      print('message click two');
+      print(message.data);
+      if (message.notification == null) {
+        final jsonData = message.data;
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      print('message click three');
+      print(message.data);
+    });
   }
 
   @override
@@ -53,12 +101,16 @@ class _HomeViewState extends State<HomeView> {
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
             selectedItemColor: primaryColor,
+            type: BottomNavigationBarType.fixed,
             showUnselectedLabels: true,
             unselectedItemColor: Colors.grey,
             unselectedLabelStyle: theme.style10W600Grey,
             selectedLabelStyle: theme.style11W800MainColor,
             onTap: (index) {
               _pageController.jumpToPage(index);
+              setState(() {
+                _currentIndex = index;
+              });
             },
             items: const [
               BottomNavigationBarItem(
@@ -142,5 +194,11 @@ class _HomeViewState extends State<HomeView> {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     // Position position = await Geolocator.getCurrentPosition();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bookingViewModel.resetTimer();
   }
 }

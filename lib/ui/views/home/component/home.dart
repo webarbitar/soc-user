@@ -94,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                         fontSize: 12,
                                         fontFamily: "Montserrat",
                                         fontWeight: FontWeight.w500,
+                                        color: Colors.black,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -565,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                     height: 80,
                                     child: CachedNetworkImage(
                                       imageUrl: data.imageUrl,
-                                      fit: BoxFit.cover,
+                                      fit: BoxFit.fitHeight,
                                     ),
                                   ),
                                 )
