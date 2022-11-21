@@ -25,8 +25,8 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
   @override
   Widget build(BuildContext context) {
     final model = context.read<BookingViewModel>();
+    userAdvance = model.bookingDetails!.advancePayment;
     int total = 0;
-    int advancePaid = 0;
     int est = model.bookingDetails!.services
         .map((e) => e.total + e.addonTotalPrice)
         .reduce((value, element) => value + element);
@@ -35,14 +35,11 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
       int totalAmount = model.bookingDetails!.spares
           .map((e) => e.total)
           .reduce((value, element) => value + element);
-      advancePaid = model.bookingDetails!.spares
-          .map((e) => e.amount)
-          .reduce((value, element) => value + element);
-      est += (totalAmount - advancePaid);
-      total += (totalAmount - advancePaid);
+      est += totalAmount;
+      total += totalAmount;
     }
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.white, elevation: 0.0),
+      appBar: AppBar(elevation: 0.0),
       backgroundColor: backgroundColor,
       body: SingleChildScrollView(
         child: Column(
@@ -64,7 +61,7 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                   if (model.bookingDetails!.services.isNotEmpty)
                     ...model.bookingDetails!.services.map((bk) {
                       var data =
-                          model.bookedServices.singleWhere((element) => element.id == bk.serviceId);
+                      model.bookedServices.singleWhere((element) => element.id == bk.serviceId);
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 14.0),
                         child: Material(
@@ -216,25 +213,25 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                                   ],
                                 ),
                                 UIHelper.verticalSpaceSmall,
-                                Row(
-                                  children: [
-                                    const Expanded(
-                                      child: Text(
-                                        "Spare Parts Amount Paid by User",
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          fontFamily: "Montserrat",
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      "- ₹ ${data.amount}",
-                                      style: const TextStyle(fontFamily: "Montserrat"),
-                                    )
-                                  ],
-                                ),
-                                UIHelper.verticalSpaceSmall,
+                                // Row(
+                                //   children: [
+                                //     const Expanded(
+                                //       child: Text(
+                                //         "Spare Parts Amount Paid by User",
+                                //         style: TextStyle(
+                                //           fontSize: 13,
+                                //           fontWeight: FontWeight.w500,
+                                //           fontFamily: "Montserrat",
+                                //         ),
+                                //       ),
+                                //     ),
+                                //     Text(
+                                //       "- ₹ ${data.amount}",
+                                //       style: const TextStyle(fontFamily: "Montserrat"),
+                                //     )
+                                //   ],
+                                // ),
+                                // UIHelper.verticalSpaceSmall,
                               ],
                             ),
                           ),
@@ -273,7 +270,7 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                             ),
                             UIHelper.verticalSpaceSmall,
                             Text(
-                              "₹ ${est - userAdvance}",
+                              "₹ $est",
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -285,8 +282,8 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                         const Divider(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text(
+                          children:  [
+                            const Text(
                               "User Paid",
                               style: TextStyle(
                                 fontSize: 13,
@@ -296,8 +293,8 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                             ),
                             UIHelper.verticalSpaceSmall,
                             Text(
-                              "- ₹ 0",
-                              style: TextStyle(
+                              "- ₹ $userAdvance",
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 fontFamily: "Montserrat",
@@ -308,6 +305,7 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                         UIHelper.verticalSpaceSmall,
                         const Divider(),
                         UIHelper.verticalSpaceSmall,
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -384,15 +382,16 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                   ],
                 ),
               )
-            else if (model.bookingDetails!.completeOtpVerified == 1 &&
-                model.bookingDetails!.paymentStatus == "pending")
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CustomButton(
-                  text: "Pay Bill",
-                  onTap: _buildPaymentMethodModel,
-                ),
-              )
+            else
+              if (model.bookingDetails!.completeOtpVerified == 1 &&
+                  model.bookingDetails!.paymentStatus == "pending")
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomButton(
+                    text: "Pay Bill",
+                    onTap: _buildPaymentMethodModel,
+                  ),
+                )
           ],
         ),
       ),

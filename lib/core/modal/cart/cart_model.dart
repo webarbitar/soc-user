@@ -1,5 +1,4 @@
 import '../category/add_on_modal.dart';
-import '../category/category_modal.dart';
 import '../service/category_service_modal.dart';
 
 class CartModel {

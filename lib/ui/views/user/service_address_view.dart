@@ -38,7 +38,6 @@ class _ServiceAddressViewState extends State<ServiceAddressView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: backgroundColor,
         elevation: 0.0,
         title: Row(
           children: [

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:socspl/core/constance/style.dart';
 import 'package:socspl/core/utils/storage/storage.dart';
 import 'package:socspl/ui/shared/navigation/navigation.dart';
 import 'package:socspl/ui/shared/ui_helpers.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
+
+import '../../core/view_modal/user/user_view_model.dart';
 
 class SplashScreenView extends StatefulWidget {
   const SplashScreenView({Key? key}) : super(key: key);
@@ -22,39 +25,52 @@ class _SplashScreenViewState extends State<SplashScreenView> {
   void _initNavigation() async {
     // Initialize local storage
     await Storage.instance.initializeStorage();
-    await Future.delayed(const Duration(seconds: 2));
     bool isLogin = Storage.instance.isLogin;
     if (isLogin) {
+      if (!mounted) return;
+      await context.read<UserViewModel>().fetchUserProfile();
       Navigation.instance.navigateAndReplace("/home");
     } else {
-      if (Storage.instance.showOnboarding) {
-        Navigation.instance.navigateAndReplace("/landing-view");
-      } else {
-        Navigation.instance.navigateAndRemoveUntil("/login");
-      }
+      Navigation.instance.navigateAndRemoveUntil("/login");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: primaryColor,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 180,
-              child: Image.asset(
-                "assets/images/logo-banner.jpeg",
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: const [
+                  Text(
+                    "SOC",
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrange,
+                    ),
+                  ),
+                  UIHelper.verticalSpaceSmall,
+                  Text(
+                    "Service On Clap",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            UIHelper.verticalSpaceLarge,
-            UIHelper.verticalSpaceLarge,
-            const LoaderWidget(
-              color: primaryColor,
-              size: 25,
-            ),
+            const SizedBox(height: 120),
+            const LoaderWidget(),
           ],
         ),
       ),

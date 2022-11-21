@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:socspl/core/modal/booking/booked_service_model.dart';
+import 'package:socspl/core/modal/booking/review_model.dart';
 import 'package:socspl/core/modal/time_slot_model.dart';
 import 'package:socspl/env.dart';
 import '../../constance/end_points.dart';
@@ -281,18 +282,40 @@ class BookingService with ServiceMixin {
   Future<ResponseModal<GeneratePaytmTokenModel>> generatePaytmToken(int bookingId) async {
     var request = http.Request('POST', parseUri("$baseUrl/generate_payment_token"));
     var header = {"Authorization": "Bearer ${_storage.token}", 'Content-Type': 'application/json'};
-    print(header);
     request.headers.addAll(header);
     request.body = jsonEncode({'booking_id': bookingId});
     http.StreamedResponse response = await request.send();
     final res = await response.stream.bytesToString();
-    debugPrint("Request booking response $res");
+    print(res);
+    debugPrint("Request booking response ${response.statusCode} $res ");
+    switch (response.statusCode) {
+      case 200:
+        final jsonData = jsonDecode(res.trim());
+        if (jsonData["status"] == true) {
+          final data = GeneratePaytmTokenModel.fromJson(jsonData["data"]);
+          return ResponseModal.success(message: jsonData["message"], data: data);
+        } else {
+          return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);
+        }
+      default:
+        return streamErrorResponse(response);
+    }
+  }
+
+  Future<ResponseModal> reviewProviderService(ReviewModel data) async {
+    var request = http.Request('POST', parseUri("$baseUrl/store_user_rating"));
+    var header = {"Authorization": "Bearer ${_storage.token}", 'Content-Type': 'application/json'};
+    print(header);
+    request.headers.addAll(header);
+    request.body = jsonEncode(data.toMap());
+    http.StreamedResponse response = await request.send();
+    final res = await response.stream.bytesToString();
+    debugPrint("Review Provider response $res");
     switch (response.statusCode) {
       case 200:
         final jsonData = jsonDecode(res);
         if (jsonData["status"] == true) {
-          final data = GeneratePaytmTokenModel.fromJson(jsonData["data"]);
-          return ResponseModal.success(message: jsonData["message"], data: data);
+          return ResponseModal.success(message: jsonData["message"]);
         } else {
           return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);
         }

@@ -33,20 +33,38 @@ class CustomButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           primary: color,
           elevation: elevation ?? 0.0,
+          padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: borderRadius ?? BorderRadius.circular(8),
           ),
         ),
         onPressed: onTap,
-        child: Text(
-          text,
-          style: textStyle ??
-              const TextStyle(
-                color: backgroundColor,
-                fontSize: 14,
-                fontFamily: "Montserrat",
-                fontWeight: FontWeight.w600,
-              ),
+        child: Container(
+          height: double.maxFinite,
+          width: double.maxFinite,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xffff0044),
+                Color(0xffff794d),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: borderRadius ?? BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              text,
+              style: textStyle ??
+                  const TextStyle(
+                    color: backgroundColor,
+                    fontSize: 14,
+                    fontFamily: "Montserrat",
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
         ),
       ),
     );

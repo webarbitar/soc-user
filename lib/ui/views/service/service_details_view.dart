@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/view_modal/home/home_view_modal.dart';
 import 'package:socspl/ui/views/service/service_view.dart';
+import 'package:socspl/ui/widgets/custom/custom_button.dart';
 
 import '../../../core/view_modal/cart/cart_view_model.dart';
 import '../../shared/navigation/navigation.dart';
@@ -29,10 +30,7 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.0,
-      ),
+      appBar: AppBar(elevation: 0.0),
       backgroundColor: Colors.white,
       bottomNavigationBar: Consumer(builder: (context, CartViewModel model, _) {
         if (!model.isPresent) {
@@ -57,24 +55,13 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
                 ),
               ),
               Flexible(
-                child: SizedBox(
+                child: CustomButton(
+                  text: "View Cart",
+                  onTap: () {
+                    Navigation.instance.navigate("/cart");
+                  },
                   width: 160,
                   height: 45,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigation.instance.navigate("/cart");
-                    },
-                    child: const Text(
-                      "View Cart",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: "Montserrat",
-                        fontSize: 14,
-                        height: 1.3,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ],

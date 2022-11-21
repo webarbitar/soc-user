@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:paytm_allinonesdk/paytm_allinonesdk.dart';
 import 'package:socspl/core/modal/address/user_address_model.dart';
 import 'package:socspl/core/modal/booking/booked_service_model.dart';
+import 'package:socspl/core/modal/booking/review_model.dart';
 import 'package:socspl/ui/shared/navigation/navigation.dart';
 import 'package:socspl/ui/views/booking/booking_invoice_view.dart';
 import 'package:socspl/core/modal/response_modal.dart';
@@ -157,7 +158,13 @@ class BookingViewModel extends BaseViewModal {
   Future<ResponseModal> fetchConfirmBooking({bool notify = false}) async {
     final res = await _bookingService.fetchConfirmedBooking(1);
     if (res.status == ApiStatus.success) {
-      _confirmBooking = res.data ?? [];
+      _confirmBooking = (res.data ?? []).where((element) => element.jobStartTime == null).toList();
+      //remove duplicate data in pending section
+      if (_pendingBooking.isNotEmpty) {
+        for (var data in _confirmBooking) {
+          _pendingBooking.removeWhere((element) => element.id == data.id);
+        }
+      }
     }
     if (notify) {
       notifyListeners();
@@ -169,6 +176,12 @@ class BookingViewModel extends BaseViewModal {
     final res = await _bookingService.fetchOngoingBooking(1);
     if (res.status == ApiStatus.success) {
       _ongoingBooking = res.data ?? [];
+      //remove duplicate data in confirm section
+      if (_confirmBooking.isNotEmpty) {
+        for (var data in _ongoingBooking) {
+          _confirmBooking.removeWhere((element) => element.id == data.id);
+        }
+      }
     }
     if (notify) {
       notifyListeners();
@@ -180,6 +193,42 @@ class BookingViewModel extends BaseViewModal {
     final res = await _bookingService.fetchCompletedBooking(1);
     if (res.status == ApiStatus.success) {
       _completedBooking = res.data ?? [];
+      //remove duplicate data in ongoing section
+      if (_ongoingBooking.isNotEmpty) {
+        for (var data in _completedBooking) {
+          _ongoingBooking.removeWhere((element) => element.id == data.id);
+        }
+      }
+    }
+
+    if (notify) {
+      notifyListeners();
+    }
+    return res;
+  }
+
+  Future<ResponseModal> fetchBookingDetailsById(int id,
+      {bool fetchService = true, bool notify = false}) async {
+    final res = await _bookingService.fetchBookingDetailsById(id);
+    if (res.status == ApiStatus.success) {
+      _bookingDetails = res.data;
+      if (fetchService) {
+        _bookedServices = [];
+        ResponseModal res2;
+        for (var element in _bookingDetails!.services) {
+          res2 = await _fetchServicesById(
+            element.serviceId.toString(),
+            cityId: _bookingDetails!.cityId.toString(),
+          );
+          if (res2.status == ApiStatus.error) {
+            res.status = res2.status;
+            res.message = res2.message;
+            _bookingDetails = null;
+            _bookedServices = [];
+            break;
+          }
+        }
+      }
     }
     if (notify) {
       notifyListeners();
@@ -187,28 +236,12 @@ class BookingViewModel extends BaseViewModal {
     return res;
   }
 
-  Future<ResponseModal> fetchBookingDetailsById(int id, {bool fetchService = true}) async {
-    final res = await _bookingService.fetchBookingDetailsById(id);
-    if (res.status == ApiStatus.success) {
-      _bookingDetails = res.data;
-      if (fetchService) {
-        _bookedServices = [];
-        for (var element in _bookingDetails!.services) {
-          await _fetchServicesById(
-            element.serviceId.toString(),
-            cityId: _bookingDetails!.cityId.toString(),
-          );
-        }
-      }
-    }
-    return res;
-  }
-
-  Future<void> _fetchServicesById(String id, {required String cityId}) async {
+  Future<ResponseModal> _fetchServicesById(String id, {required String cityId}) async {
     final res = await _categoryService.fetchServiceById(id, cityId);
     if (res.status == ApiStatus.success) {
       _bookedServices.add(res.data!);
     }
+    return res;
   }
 
   Future<ResponseModal> acceptEstimateBill() async {
@@ -244,6 +277,10 @@ class BookingViewModel extends BaseViewModal {
       }
     }
     return res;
+  }
+
+  Future<ResponseModal> reviewProviderService(ReviewModel data) async {
+    return await _bookingService.reviewProviderService(data);
   }
 }
 

@@ -37,6 +37,13 @@ class BookedServiceDetailsModel extends BookedServiceModel {
 
     return serviceSp + spares.length;
   }
+
+  int get totalAmount {
+    int servPP = services.map((e) => e.total).reduce((value, element) => value + element);
+    int addServPP =
+        services.map((e) => e.addonTotalPrice).reduce((value, element) => value + element);
+    return servPP + addServPP + totalSparePartsPrice;
+  }
 }
 
 class BookedService {
@@ -84,7 +91,6 @@ class BookedService {
     }
     return 0;
   }
-
 
   // ================================ Spare Parts Getter Methods ================================
 

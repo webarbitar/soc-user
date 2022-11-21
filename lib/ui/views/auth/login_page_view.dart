@@ -9,6 +9,7 @@ import 'package:socspl/core/modal/user/auth/login_modal.dart';
 import 'package:socspl/core/modal/user/auth/user_registration_modal.dart';
 import 'package:socspl/core/utils/storage/storage.dart';
 import 'package:socspl/core/view_modal/auth/auth_view_modal.dart';
+import 'package:socspl/ui/shared/ui_helpers.dart';
 import 'package:socspl/ui/shared/validator_mixin.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
@@ -50,65 +51,72 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
     windowHeight = MediaQuery.of(context).size.height;
     windowSize = min(windowWidth, windowHeight);
     return Scaffold(
-      backgroundColor: darkMode ? Colors.black : mainColorGray,
-      body: Stack(
-        children: <Widget>[
-          ListView(
-            children: [
-              const SizedBox(
-                height: 50,
-              ),
-              SizedBox(
-                  width: windowWidth * 0.3,
-                  height: windowWidth * 0.3,
-                  child: Image.asset("assets/images/logo.png", fit: BoxFit.contain)),
-              const SizedBox(
-                height: 20,
-              ),
-              Center(
-                child: Text(
-                  strings.get(1),
-                  style: theme.style25W400,
-                ),
-              ),
-              const SizedBox(
-                height: 50,
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: darkMode ? blackColorTitleBkg : Colors.white,
-                  borderRadius: BorderRadius.circular(theme.radius),
-                  border: Border.all(color: Colors.grey.withAlpha(50)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.3),
-                      spreadRadius: 1,
-                      blurRadius: 3,
-                      offset: const Offset(1, 1),
+      backgroundColor: primaryColor,
+      body: SizedBox(
+        height: double.maxFinite,
+        width: double.maxFinite,
+        // decoration: BoxDecoration(
+        //   gradient: LinearGradient(
+        //       colors: [
+        //         primaryColor.shade500,
+        //         const Color(0xfff02d71),
+        //       ],
+        //       begin: Alignment.topLeft,
+        //       end: const Alignment(5, 0),
+        //       stops: const [0.4, 0.9]),
+        // ),
+        child: Stack(
+          children: <Widget>[
+            ListView(
+              children: [
+                UIHelper.verticalSpaceLarge,
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Service On Clap",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontFamily: "Montserrat",
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrange,
                     ),
-                  ],
-                ),
-                child: Edit43a(
-                  prefixIcon: Icon(
-                    Icons.phone_android,
-                    color: darkMode ? Colors.white : Colors.black,
                   ),
-                  controller: _phoneCtrl,
-                  hint: "Enter your phone",
-                  editStyle: theme.style14W400,
-                  hintStyle: theme.style14W400Grey,
-                  color: Colors.grey,
-                  type: TextInputType.phone,
                 ),
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 15, right: 15),
-                child: Column(
+                UIHelper.verticalSpaceLarge,
+                UIHelper.verticalSpaceLarge,
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: darkMode ? blackColorTitleBkg : Colors.white,
+                    borderRadius: BorderRadius.circular(theme.radius),
+                    border: Border.all(color: Colors.grey.withAlpha(50)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: const Offset(1, 1),
+                      ),
+                    ],
+                  ),
+                  child: Edit43a(
+                    prefixIcon: Icon(
+                      Icons.phone_android,
+                      color: darkMode ? Colors.white : Colors.black,
+                    ),
+                    controller: _phoneCtrl,
+                    hint: "Enter your phone",
+                    editStyle: theme.style14W400,
+                    hintStyle: theme.style14W400Grey,
+                    color: Colors.grey,
+                    type: TextInputType.phone,
+                  ),
+                ),
+                const SizedBox(
+                  height: 40,
+                ),
+                Column(
                   children: [
                     // Row(
                     //   children: [
@@ -123,8 +131,25 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
                     // ),
                     SizedBox(
                       height: 45,
-                      child: button2s(
-                          strings.get(10), theme.style14W800W, primaryColor, 10, _login, true),
+                      child: ElevatedButton(
+                        onPressed: _login,
+                        child: Ink(
+                          width: double.maxFinite,
+                          height: 45,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xffff0044),
+                                Color(0xffff794d),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(80.0)),
+                          ),
+                          child: const Center(child: Text("Sign In")),
+                        ),
+                      ),
                     ),
                     //   ],
                     // ),
@@ -133,45 +158,51 @@ class _LoginPageViewState extends State<LoginPageView> with ValidatorMixin {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(
-                height: 150,
-              ),
-            ],
-          ),
-          if (widget.redirectRoute == null)
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20, right: 20),
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(40),
-                    ),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w600,
+                const Center(
+                  child: Text(
+                    "Co-powered by SOC Services pvt Ltd",
+                    style: TextStyle(
                       fontFamily: "Montserrat",
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  onPressed: () {
-                    Navigation.instance.navigateAndRemoveUntil("/home");
-                  },
-                  child: const Text("Skip"),
+                )
+              ],
+            ),
+            if (widget.redirectRoute == null)
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 20, right: 20),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Montserrat",
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigation.instance.navigateAndRemoveUntil("/home");
+                    },
+                    child: const Text("Skip"),
+                  ),
                 ),
               ),
-            ),
-          if (_wait)
-            const Center(
-              child: LoaderWidget(
-                color: primaryColor,
+            if (_wait)
+              const Center(
+                child: LoaderWidget(),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

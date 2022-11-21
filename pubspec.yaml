@@ -63,6 +63,12 @@ dependencies:
   path_provider: ^2.0.10
   open_file: ^3.2.1
   paytm_allinonesdk: ^1.1.8
+  carousel_slider: ^4.1.1
+  animated_text_kit: ^4.2.2
+  awesome_notifications: ^0.6.21
+  image_picker: ^0.8.5+3
+#  flutter_foreground_task: ^3.10.0
+
 
 
 dev_dependencies:

@@ -8,7 +8,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="Socspl">
+        android:label="Service On Clap">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
@@ -39,6 +39,7 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyA4C9gY67FdBWvUbLAJtcFOXSm1CGtHxRo" />
+
     </application>
     <!-- Provide required visibility configuration for API level 30 and above -->
     <queries>

@@ -40,7 +40,6 @@ class _HomeBookingViewState extends State<HomeBookingView> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("My Booking"),
-          backgroundColor: Colors.white,
           elevation: 0.2,
           bottom: const TabBar(
             labelStyle: TextStyle(
@@ -232,9 +231,9 @@ class OngoingBookingWidget extends StatefulWidget {
   State<OngoingBookingWidget> createState() => _OngoingBookingWidgetState();
 }
 
-class _OngoingBookingWidgetState extends State<OngoingBookingWidget> {
+class _OngoingBookingWidgetState extends State<OngoingBookingWidget>
+    with AutomaticKeepAliveClientMixin {
   final _busyNfy = ValueNotifier(false);
-  List<BookedServiceModel> _bookedServices = [];
 
   @override
   void initState() {
@@ -251,6 +250,7 @@ class _OngoingBookingWidgetState extends State<OngoingBookingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Consumer<BookingViewModel>(builder: (context, model, _) {
       return ValueListenableBuilder(
         valueListenable: _busyNfy,
@@ -290,6 +290,9 @@ class _OngoingBookingWidgetState extends State<OngoingBookingWidget> {
       );
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class CompletedBookingWidget extends StatefulWidget {
@@ -299,7 +302,8 @@ class CompletedBookingWidget extends StatefulWidget {
   State<CompletedBookingWidget> createState() => _CompletedBookingWidgetState();
 }
 
-class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
+class _CompletedBookingWidgetState extends State<CompletedBookingWidget>
+    with AutomaticKeepAliveClientMixin {
   final _busyNfy = ValueNotifier(false);
 
   @override
@@ -317,45 +321,51 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<BookingViewModel>(builder: (context, model, _) {
-      return ValueListenableBuilder(
-        valueListenable: _busyNfy,
-        builder: (context, bool busy, _) {
-          if (busy) {
-            return const Center(
-              child: LoaderWidget(),
-            );
-          }
-          if (model.completedBooking.isEmpty) {
-            return const Center(
-              child: Text(
-                "No booking found. Please book services to view",
-                style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+    super.build(context);
+    return Consumer<BookingViewModel>(
+      builder: (context, model, _) {
+        return ValueListenableBuilder(
+          valueListenable: _busyNfy,
+          builder: (context, bool busy, _) {
+            if (busy) {
+              return const Center(
+                child: LoaderWidget(),
+              );
+            }
+            if (model.completedBooking.isEmpty) {
+              return const Center(
+                child: Text(
+                  "No booking found. Please book services to view",
+                  style: TextStyle(fontSize: 14, fontFamily: "Montserrat"),
+                ),
+              );
+            }
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  ...model.completedBooking.map((data) {
+                    return InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => BookingDetailsView(id: data.id),
+                          ),
+                        );
+                      },
+                      child: BookedServiceCardWidget(data: data),
+                    );
+                  })
+                ],
               ),
             );
-          }
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                ...model.completedBooking.map((data) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => BookingDetailsView(id: data.id),
-                        ),
-                      );
-                    },
-                    child: BookedServiceCardWidget(data: data),
-                  );
-                })
-              ],
-            ),
-          );
-        },
-      );
-    });
+          },
+        );
+      },
+    );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class BookedServiceCardWidget extends StatelessWidget {

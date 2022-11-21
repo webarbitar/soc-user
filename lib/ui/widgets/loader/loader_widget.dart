@@ -6,7 +6,7 @@ import '../../../core/constance/style.dart';
 class LoaderWidget extends StatefulWidget {
   const LoaderWidget({
     Key? key,
-    this.color = primaryColor,
+    this.color = Colors.deepOrange,
     this.size = 20.0,
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 2400),

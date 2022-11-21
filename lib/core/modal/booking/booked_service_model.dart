@@ -27,6 +27,7 @@ class BookedServiceModel {
   String paymentStatus;
   int serviceProviderAmount;
   int commission;
+  int advancePayment;
   String selfieUrl;
   String date;
   String time;
@@ -63,6 +64,7 @@ class BookedServiceModel {
         paymentMode = json['payment_mode'],
         paymentStatus = json['payment_status'],
         serviceProviderAmount = json['service_provider_amount']?.round() ?? 0,
+        advancePayment = json['advance_payment'],
         commission = json['commission'].round(),
         selfieUrl = json['selfie_url'] ?? "",
         status = json['status'],

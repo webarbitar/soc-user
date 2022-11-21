@@ -73,9 +73,7 @@ class _HomeViewState extends State<HomeView> {
     FirebaseMessaging.onMessage.listen((message) {
       print('message click two');
       print(message.data);
-      if (message.notification == null) {
-        final jsonData = message.data;
-      }
+      fcmPushMessageHandler(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
@@ -88,8 +86,8 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return AnnotatedRegion(
       value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
+        statusBarColor: primaryColor,
       ),
       child: WillPopScope(
         onWillPop: () async {
@@ -121,12 +119,6 @@ class _HomeViewState extends State<HomeView> {
               ),
               BottomNavigationBarItem(
                 icon: Icon(
-                  Icons.favorite,
-                ),
-                label: "Favorite",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(
                   Icons.shopping_cart,
                 ),
                 label: "Cart",
@@ -145,12 +137,16 @@ class _HomeViewState extends State<HomeView> {
           ),
           body: PageView(
             controller: _pageController,
-            children: [
-              const HomeScreen(),
-              Container(),
-              const HomeCartView(),
-              const HomeBookingView(),
-              const HomeMenuView(),
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            children: const [
+              HomeScreen(),
+              HomeCartView(),
+              HomeBookingView(),
+              HomeMenuView(),
             ],
           ),
         ),
@@ -194,6 +190,37 @@ class _HomeViewState extends State<HomeView> {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     // Position position = await Geolocator.getCurrentPosition();
+  }
+
+  void fcmPushMessageHandler(RemoteMessage message) async {
+    final model = context.read<BookingViewModel>();
+    final data = message.data;
+    if (data.isNotEmpty) {
+      switch (data["event"]) {
+        case "service:booking:confirm":
+          model.fetchConfirmBooking(notify: true);
+          break;
+        case "service:booking:started":
+          // model.fetchOngoingBooking(notify: true);
+          print(data["data"].toString());
+          model.fetchBookingDetailsById(
+            int.parse(data["data"].toString()),
+            fetchService: false,
+            notify: true,
+          );
+          break;
+        case "service:booking:completeOtp":
+          model.fetchBookingDetailsById(
+            int.parse(data["data"].toString()),
+            fetchService: false,
+            notify: true,
+          );
+          break;
+        case "service:booking:completed":
+          model.fetchOngoingBooking(notify: true);
+          break;
+      }
+    }
   }
 
   @override

@@ -10,6 +10,7 @@ import 'package:socspl/ui/shared/messenger/util.dart';
 import '../../../core/constance/strings.dart';
 import '../../../core/constance/style.dart';
 import '../../shared/navigation/navigation.dart';
+import '../../shared/ui_helpers.dart';
 import '../../widgets/appbars/appbar1.dart';
 
 class OtpView extends StatelessWidget {
@@ -25,115 +26,139 @@ class OtpView extends StatelessWidget {
     final modal = context.read<AuthViewModal>();
     print(redirectRoute);
     return Scaffold(
-      backgroundColor: darkMode ? Colors.black : mainColorGray,
-      body: Directionality(
-        textDirection: strings.direction,
-        child: Stack(
-          children: <Widget>[
-            ListView(
-              children: [
-                const SizedBox(
-                  height: 50,
-                ),
-                SizedBox(
-                    width: windowWidth * 0.3,
-                    height: windowWidth * 0.3,
-                    child: Image.asset("assets/images/logo.png", fit: BoxFit.contain)),
-                const SizedBox(
-                  height: 20,
-                ),
-                Center(
-                  child: Text(
-                    "Otp has been send to ${modal.isLogin ? modal.loginModal!.mobile : modal.registrationModal!.mobile}",
-                    style: TextStyle(
+      backgroundColor: primaryColor,
+      appBar: AppBar(
+        elevation: 0.0,
+        backgroundColor: Colors.transparent,
+      ),
+      body: Container(
+        // decoration: BoxDecoration(
+        //   gradient: LinearGradient(
+        //     colors: [
+        //       primaryColor.shade500,
+        //       const Color(0x32ad1998),
+        //     ],
+        //     // begin: Alignment.topCenter,
+        //     // end: Alignment.centerRight,
+        //     // stops: const [0.0, 1.0],
+        //   ),
+        // ),
+        child: Directionality(
+          textDirection: strings.direction,
+          child: ListView(
+            children: [
+              const SizedBox(
+                height: 70,
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "OTP",
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Montserrat",
+                      ),
+                    ),
+                    const Text(
+                      "Verification",
+                      style: TextStyle(
+                        fontSize: 28,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: "Montserrat",
+                      ),
+                    ),
+                    UIHelper.verticalSpaceMedium,
+                    Text(
+                      "Otp has been send to ${modal.isLogin ? modal.loginModal!.mobile : modal.registrationModal!.mobile}",
+                      style: const TextStyle(
                         fontFamily: "Montserrat",
                         letterSpacing: 0.4,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: (darkMode) ? Colors.white : Colors.black),
-                  ),
-                ),
-                const SizedBox(
-                  height: 50,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: SizedBox(
-                    width: 20,
-                    child: PinCodeTextField(
-                      keyboardType: TextInputType.phone,
-                      onChanged: (val) {},
-                      controller: _otpCtrl,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      length: 4,
-                      autoFocus: true,
-                      textStyle: const TextStyle(fontSize: 20, color: Colors.black),
-                      enablePinAutofill: true,
-                      enabled: true,
-                      enableActiveFill: true,
-                      pinTheme: PinTheme(
-                          borderRadius: BorderRadius.circular(2),
-                          selectedColor: primaryColor.withOpacity(0.2),
-                          selectedFillColor: primaryColor.withOpacity(0.2),
-                          activeColor: primaryColor.withOpacity(0.2),
-                          activeFillColor: primaryColor.withOpacity(0.2),
-                          inactiveColor: primaryColor.withOpacity(0.2),
-                          inactiveFillColor: primaryColor.withOpacity(0.2),
-                          fieldHeight: 45,
-                          fieldWidth: 45),
-                      appContext: context,
-                      onCompleted: (_) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        if (modal.isLogin) {
-                          final res = modal.loginUser(_);
-                          res.then((value) {
-                            if (value.status == ApiStatus.success) {
-                              messageOk(context, value.message);
-                              if (redirectRoute != null) {
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => redirectRoute!,
-                                  ),
-                                );
-                              } else {
-                                Navigation.instance.navigateAndRemoveUntil("/home");
-                              }
-                            } else {
-                              messageError(context, value.message);
-                            }
-                          });
-                        } else {
-                          final res = modal.registerUser(_);
-                          res.then((value) {
-                            if (value.status == ApiStatus.success) {
-                              messageOk(context, value.message);
-                              Navigation.instance.navigateAndRemoveUntil("/home");
-                            } else {
-                              messageError(context, value.message);
-                            }
-                          });
-                        }
-                      },
+                        color: Colors.white,
+                      ),
                     ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 50,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: SizedBox(
+                  width: 20,
+                  child: PinCodeTextField(
+                    keyboardType: TextInputType.phone,
+                    onChanged: (val) {},
+                    controller: _otpCtrl,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    length: 4,
+                    autoFocus: true,
+                    textStyle: const TextStyle(fontSize: 20, color: Colors.black),
+                    enablePinAutofill: true,
+                    enabled: true,
+                    enableActiveFill: true,
+                    pinTheme: PinTheme(
+                        borderRadius: BorderRadius.circular(20),
+                        selectedColor: Colors.white,
+                        selectedFillColor: Colors.white,
+                        activeColor: Colors.white,
+                        activeFillColor: Colors.white,
+                        inactiveColor: Colors.white,
+                        inactiveFillColor: Colors.white,
+                        fieldHeight: 45,
+                        fieldWidth: 45),
+                    appContext: context,
+                    onCompleted: (_) {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      if (modal.isLogin) {
+                        final res = modal.loginUser(_);
+                        res.then((value) {
+                          if (value.status == ApiStatus.success) {
+                            messageOk(context, value.message);
+                            if (redirectRoute != null) {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => redirectRoute!,
+                                ),
+                              );
+                            } else {
+                              Navigation.instance.navigateAndRemoveUntil("/home");
+                            }
+                          } else {
+                            messageError(context, value.message);
+                          }
+                        });
+                      } else {
+                        final res = modal.registerUser(_);
+                        res.then((value) {
+                          if (value.status == ApiStatus.success) {
+                            messageOk(context, value.message);
+                            Navigation.instance.navigateAndRemoveUntil("/home");
+                          } else {
+                            messageError(context, value.message);
+                          }
+                        });
+                      }
+                    },
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
-              ],
-            ),
-            appbar1(
-              Colors.transparent,
-              (darkMode) ? Colors.white : Colors.black,
-              "",
-              context,
-              () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );

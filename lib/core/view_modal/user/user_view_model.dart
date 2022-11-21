@@ -71,4 +71,19 @@ class UserViewModel extends BaseViewModal {
     }
     return res;
   }
+
+  Future<ResponseModal> updateUserProfile(String name, String email, String? image) async {
+    final res = await _userService.updateUserProfile( image,{
+      "id": "${_user?.id}",
+      "name": name,
+      "email": email,
+      "mobile": "${_user?.mobile}",
+      "vendor_id": "1",
+      "city_id": "1",
+    });
+    if (res.status == ApiStatus.success) {
+      await fetchUserProfile(notify: true);
+    }
+    return res;
+  }
 }

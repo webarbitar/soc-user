@@ -63,7 +63,6 @@ class _BookingSuccessViewState extends State<BookingSuccessView> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.white,
           elevation: 0.0,
         ),
         backgroundColor: Colors.white,

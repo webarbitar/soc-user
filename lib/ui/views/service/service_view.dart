@@ -7,6 +7,7 @@ import 'package:socspl/core/modal/service/category_service_modal.dart';
 import 'package:socspl/ui/views/category/rate_card/rate_card_view.dart';
 import 'package:socspl/ui/views/home/home_view.dart';
 import 'package:socspl/ui/views/service/service_details_view.dart';
+import 'package:socspl/ui/widgets/custom/custom_button.dart';
 import 'package:socspl/ui/widgets/view/service/service_widget.dart';
 
 import '../../../core/constance/strings.dart';
@@ -70,7 +71,6 @@ class _ServiceViewState extends State<ServiceView> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Colors.white,
         title: Text(
           context.read<HomeViewModal>().selectedCategory,
           style: const TextStyle(
@@ -291,15 +291,11 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12),
-                    child: button2s(
-                      "Done",
-                      theme.style14W800W,
-                      primaryColor,
-                      10,
-                      () {
+                    child: CustomButton(
+                      text: "Done",
+                      onTap: () {
                         Navigator.of(context).pop();
                       },
-                      true,
                     ),
                   ),
                 ],
@@ -383,53 +379,63 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                 elevation: 2.0,
                                 borderRadius: BorderRadius.circular(4),
                                 color: Theme.of(context).primaryColor,
-                                child: SizedBox(
+                                child: Container(
                                   height: 30,
                                   width: 70,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(2.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        InkWell(
-                                          onTap: () {
-                                            model.decreaseServiceQty(cart);
-                                          },
-                                          child: const Icon(
-                                            Icons.remove,
-                                            color: Colors.white,
-                                            size: 22,
-                                          ),
-                                        ),
-                                        Flexible(
-                                          child: Text(
-                                            "${cart.quantity}",
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            softWrap: false,
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                        InkWell(
-                                          onTap: () {
-                                            model.increaseServiceQty(cart);
-                                          },
-                                          child: const Icon(
-                                            Icons.add,
-                                            color: Colors.white,
-                                            size: 22,
-                                          ),
-                                        ),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xffff0044),
+                                        Color(0xffff794d),
                                       ],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
                                     ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          model.decreaseServiceQty(cart);
+                                        },
+                                        child: const Icon(
+                                          Icons.remove,
+                                          color: Colors.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          "${cart.quantity}",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          softWrap: false,
+                                          overflow: TextOverflow.clip,
+                                        ),
+                                      ),
+                                      InkWell(
+                                        onTap: () {
+                                          model.increaseServiceQty(cart);
+                                        },
+                                        child: const Icon(
+                                          Icons.add,
+                                          color: Colors.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               );
                             } else {
                               return SizedBox(
                                 height: 30,
+                                width: 70,
                                 child: ElevatedButton(
                                   onPressed: () {
                                     if (Storage.instance.isLogin) {
@@ -455,10 +461,34 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                                       );
                                     }
                                   },
-                                  child: const Text(
-                                    "Add",
-                                    style: TextStyle(
-                                      color: Colors.white,
+                                  style: ElevatedButton.styleFrom(
+                                    primary: Colors.transparent,
+                                    padding: EdgeInsets.zero,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                  child: Container(
+                                    height: 30,
+                                    width: 70,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xffff0044),
+                                          Color(0xffff794d),
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        "Add",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -32,7 +32,6 @@ class _HomeCartViewState extends State<HomeCartView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Cart"),
-        backgroundColor: Colors.white,
         elevation: 0.2,
         centerTitle: true,
       ),
@@ -47,6 +46,7 @@ class _HomeCartViewState extends State<HomeCartView> {
                   Icon(
                     Icons.shopping_cart_outlined,
                     size: 50,
+                    color: Colors.black,
                   ),
                   UIHelper.verticalSpaceMedium,
                   Text(

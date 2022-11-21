@@ -15,6 +15,7 @@ import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constance/style.dart';
+import '../../../core/modal/booking/booked_service_details_model.dart';
 import '../../shared/ui_helpers.dart';
 import '../../widgets/custom/custom_button.dart';
 
@@ -27,18 +28,21 @@ class BookingDetailsView extends StatefulWidget {
   State<BookingDetailsView> createState() => _BookingDetailsViewState();
 }
 
-class _BookingDetailsViewState extends State<BookingDetailsView> {
+class _BookingDetailsViewState extends State<BookingDetailsView> with WidgetsBindingObserver {
   final _busyNfy = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _busyNfy.value = true;
     final model = context.read<BookingViewModel>();
     final res = model.fetchBookingDetailsById(widget.id);
     res.then(
       (value) async {
-        if (value.status == ApiStatus.success) {}
+        if (value.status == ApiStatus.error) {
+          showErrorMessage(value.message);
+        }
         _busyNfy.value = false;
       },
     );
@@ -50,7 +54,6 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
     final model = context.watch<BookingViewModel>();
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0.0,
         actions: [
           ValueListenableBuilder(
@@ -58,6 +61,7 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
             builder: (context, bool busy, _) {
               if (!busy && model.bookingDetails?.status == "completed") {
                 return TextButton.icon(
+                  style: TextButton.styleFrom(primary: Colors.white),
                   onPressed: () async {
                     loadingDialog(context);
                     final invoiceServ = BookingInvoiceUtil(
@@ -113,7 +117,7 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
                           ),
                         ),
                         UIHelper.verticalSpaceSmall,
-                        ...model.services.map((data) {
+                        ...model.bookingDetails!.services.map((data) {
                           return _buildServiceCard(data, model);
                         }),
                         if (model.bookingDetails!.spares.isNotEmpty) UIHelper.verticalSpaceMedium,
@@ -346,7 +350,7 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
                                   ),
                                   UIHelper.verticalSpaceSmall,
                                   Text(
-                                    "₹ ${model.bookingDetails?.amount}",
+                                    "₹ ${model.bookingDetails?.totalAmount}",
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -388,6 +392,23 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
             );
           }),
     );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        final model = context.read<BookingViewModel>();
+        model.fetchBookingDetailsById(widget.id, notify: true, fetchService: false);
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
   }
 
   Widget _buildProviderInfo(BookingViewModel model) {
@@ -568,10 +589,8 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
     );
   }
 
-  Widget _buildServiceCard(CategoryServiceModal data, BookingViewModel model) {
-    var bkServ =
-        model.bookingDetails!.services.singleWhere((element) => element.serviceId == data.id);
-
+  Widget _buildServiceCard(BookedService bkServ, BookingViewModel model) {
+    var data = model.bookedServices.where((element) => element.id == bkServ.serviceId).first;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -586,11 +605,11 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: SizedBox(
-                  height: 60,
+                  height: 90,
                   width: 90,
                   child: CachedNetworkImage(
                     imageUrl: data.imageUrl,
-                    height: 60,
+                    height: 90,
                     width: 90,
                     fit: BoxFit.cover,
                   ),
@@ -665,5 +684,11 @@ class _BookingDetailsViewState extends State<BookingDetailsView> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
   }
 }

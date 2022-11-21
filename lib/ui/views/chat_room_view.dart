@@ -22,7 +22,6 @@ class ChatRoomView extends StatefulWidget {
 class _ChatRoomViewState extends State<ChatRoomView> {
   final TextEditingController _controller = TextEditingController();
   Query<Map<String, dynamic>>? fcmQuery;
-  late String sessionId;
 
   @override
   void initState() {
@@ -31,13 +30,23 @@ class _ChatRoomViewState extends State<ChatRoomView> {
   }
 
   void initChatFireStore() {
-    sessionId = "booking-${widget.data!.id}-${widget.data!.userId}";
     try {
       // FirebaseFirestore.instance.collection('service-booking/$sessionId/messages').doc().set({});
       fcmQuery = FirebaseFirestore.instance
-          .collection('service-booking/$sessionId/messages')
+          .collection('chat_message')
+          .where("bookingId", isEqualTo: widget.data!.id)
           .orderBy('createdAt', descending: true)
           .limit(20);
+
+      fcmQuery?.get().then((value) {
+        final batch = FirebaseFirestore.instance.batch();
+        for (var el in value.docs) {
+          if (el.get("receiverId") == widget.data!.userId && !el.get("read")) {
+            batch.update(el.reference, {"read": true});
+          }
+        }
+        batch.commit();
+      });
     } catch (e, stackTrace) {
       debugPrintStack(stackTrace: stackTrace, label: e.toString());
       print('***');
@@ -51,7 +60,6 @@ class _ChatRoomViewState extends State<ChatRoomView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Chat"),
-        backgroundColor: Colors.white,
         elevation: 0.3,
       ),
       backgroundColor: Colors.white,
@@ -94,9 +102,11 @@ class _ChatRoomViewState extends State<ChatRoomView> {
           Expanded(
             child: buildListMsg(),
           ),
-          Row(children: <Widget>[
-            buildInput(),
-          ])
+          Row(
+            children: <Widget>[
+              buildInput(),
+            ],
+          )
         ],
       ),
     );
@@ -121,12 +131,15 @@ class _ChatRoomViewState extends State<ChatRoomView> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 12),
               suffixIcon: GestureDetector(
                 onTap: () {
-                  FirebaseFirestore.instance
-                      .collection('service-booking/$sessionId/messages')
-                      .doc()
-                      .set({
+                  FirebaseFirestore.instance.collection('chat_message').doc().set({
+                    "bookingId": widget.data!.id,
+                    "senderId": widget.data!.userId,
+                    "receiverId": widget.data!.serviceProviderId,
                     "message": _controller.text,
                     "userType": "user",
+                    'read': false,
+                    'delivered': false,
+                    "messageBy": "New Message",
                     "createdAt": FieldValue.serverTimestamp(),
                   });
                   _controller.clear();
@@ -189,7 +202,7 @@ class _ChatRoomViewState extends State<ChatRoomView> {
     return StreamBuilder(
       stream: fcmQuery!.snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-        if (!snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return SizedBox(
             height: MediaQuery.of(context).size.height,
             child: const Center(
@@ -199,6 +212,7 @@ class _ChatRoomViewState extends State<ChatRoomView> {
             ),
           );
         } else {
+          print(snapshot.data);
           var listMsg = snapshot.data?.docs ?? [];
           if (listMsg.isEmpty) {
             return Center(
@@ -242,13 +256,12 @@ class _ChatRoomViewState extends State<ChatRoomView> {
             reverse: true,
             itemBuilder: (BuildContext context, int index) {
               print(snapshot.data!.docs[index].get('message'));
+              if (!snapshot.data!.docs[index].get("read")) {
+                snapshot.data!.docs[index].reference.update({"read": true});
+              }
               return msgItem(
                 index,
-                MessageModel(
-                  message: snapshot.data!.docs[index].get('message'),
-                  userType: snapshot.data!.docs[index].get('userType'),
-                  createdAt: snapshot.data!.docs[index].get('createdAt'),
-                ),
+                MessageModel.fromJson(snapshot.data!.docs[index].data()),
               );
             },
           );

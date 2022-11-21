@@ -4,7 +4,23 @@ import 'package:flutter/services.dart';
 bool darkMode = false;
 OnDemandServiceTheme theme = OnDemandServiceTheme();
 
-const primaryColor = Colors.blue;
+// const primaryColor = Colors.blue;
+
+const primaryColor = MaterialColor(
+  0xFF3C006B,
+  <int, Color>{
+    50: Color(0xFFE8E0ED),
+    100: Color(0xFFC5B3D3),
+    200: Color(0xFF9E80B5),
+    300: Color(0xFF774D97),
+    400: Color(0xFF592681),
+    500: Color(0xFF3C006B),
+    600: Color(0xFF360063),
+    700: Color(0xFF2E0058),
+    800: Color(0xFF27004E),
+    900: Color(0xFF1A003C),
+  },
+);
 const mainColorGray = Color(0xfffafafa);
 const blackColorTitleBkg = Color(0xff202020);
 const backgroundColor = Color.fromRGBO(246, 247, 251, 1);
@@ -24,7 +40,6 @@ const systemOverlayStyle = SystemUiOverlayStyle(
   statusBarIconBrightness: Brightness.dark,
   systemNavigationBarIconBrightness: Brightness.dark,
 );
-
 Decoration decor = BoxDecoration(
   color: (darkMode) ? blackColorTitleBkg : Colors.white,
   borderRadius: BorderRadius.circular(theme.radius),

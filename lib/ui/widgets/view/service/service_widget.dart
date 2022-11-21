@@ -156,52 +156,61 @@ class ServiceWidget extends StatelessWidget {
                           elevation: 2.0,
                           borderRadius: BorderRadius.circular(4),
                           color: Theme.of(context).primaryColor,
-                          child: SizedBox(
+                          child: Container(
                             height: 30,
-                            child: Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      if (cart.additionalItem.isNotEmpty) {
-                                        onTap();
-                                      } else {
-                                        model.decreaseServiceQty(cart);
-                                      }
-                                    },
-                                    child: const Icon(
-                                      Icons.remove,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: Text(
-                                      "${cart.totalQuantity}",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      softWrap: false,
-                                      overflow: TextOverflow.clip,
-                                    ),
-                                  ),
-                                  InkWell(
-                                    onTap: () {
-                                      if (cart.additionalItem.isNotEmpty) {
-                                        onTap();
-                                      } else {
-                                        model.increaseServiceQty(cart);
-                                      }
-                                    },
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xffff0044),
+                                  Color(0xffff794d),
                                 ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
                               ),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            padding: const EdgeInsets.all(2.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    if (cart.additionalItem.isNotEmpty) {
+                                      onTap();
+                                    } else {
+                                      model.decreaseServiceQty(cart);
+                                    }
+                                  },
+                                  child: const Icon(
+                                    Icons.remove,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    "${cart.totalQuantity}",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    softWrap: false,
+                                    overflow: TextOverflow.clip,
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    if (cart.additionalItem.isNotEmpty) {
+                                      onTap();
+                                    } else {
+                                      model.increaseServiceQty(cart);
+                                    }
+                                  },
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -234,10 +243,34 @@ class ServiceWidget extends StatelessWidget {
                                 Navigation.instance.navigate("/login", args: redirectRoute);
                               }
                             },
-                            child: const Text(
-                              "Add",
-                              style: TextStyle(
-                                color: Colors.white,
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.transparent,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            child: Container(
+                              height: double.maxFinite,
+                              width: double.maxFinite,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xffff0044),
+                                    Color(0xffff794d),
+                                  ],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  "Add",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           ),

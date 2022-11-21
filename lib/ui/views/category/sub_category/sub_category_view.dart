@@ -17,6 +17,7 @@ import '../../../../core/modal/service/category_service_modal.dart';
 import '../../../../core/view_modal/cart/cart_view_model.dart';
 import '../../../shared/navigation/navigation.dart';
 import '../../../widgets/buttons/button202z.dart';
+import '../../../widgets/custom/custom_button.dart';
 import '../../../widgets/edit26.dart';
 import '../../service/service_view.dart';
 
@@ -53,14 +54,11 @@ class _SubCategoryViewState extends State<SubCategoryView> {
     final model = context.read<HomeViewModal>();
     // Initialize the video player controller.
     if (widget.category.videoUrl != null && widget.category.videoUrl!.isNotEmpty) {
-      _videoCtrl = VideoPlayerController.network(widget.category.videoUrl!)
-        ..initialize().then((_) {
-          _videoCtrl?.setVolume(0);
-          _videoCtrl?.play();
-          _videoCtrl?.setLooping(true);
-
-          setState(() {});
-        });
+      _videoCtrl = VideoPlayerController.network(widget.category.videoUrl!);
+      await _videoCtrl?.initialize();
+      _videoCtrl?.setVolume(0);
+      _videoCtrl?.play();
+      _videoCtrl?.setLooping(true);
     }
     await model.fetchChildCategoryModal("${sub.categoryId}", "${sub.id}");
 
@@ -76,102 +74,24 @@ class _SubCategoryViewState extends State<SubCategoryView> {
 
   @override
   Widget build(BuildContext context) {
+    const dec = BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.all(
+        Radius.circular(8),
+      ),
+    );
     final homeModel = context.read<HomeViewModal>();
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: primaryColor.shade50,
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Colors.white,
-        title: Text(
-          widget.category.name,
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            fontFamily: "Montserrat",
-          ),
-        ),
+        title: Text(widget.category.name),
         elevation: 0.0,
-      ),
-      floatingActionButton: context.watch<HomeViewModal>().childCategories.isNotEmpty
-          ? SizedBox(
-              height: 35,
-              child: FloatingActionButton.extended(
-                  backgroundColor: Colors.black87,
-                  onPressed: () {
-                    _childCategoryModalView();
-                  },
-                  label: Row(
-                    children: const [
-                      Icon(
-                        Icons.menu,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        "Menu",
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  )),
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      bottomNavigationBar: Consumer(builder: (context, CartViewModel model, _) {
-        if (!model.isPresent) {
-          return const SizedBox();
-        }
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8.0,
-            horizontal: 14,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  "₹ ${model.totalPrice}",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Flexible(
-                child: SizedBox(
-                  width: 160,
-                  height: 45,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigation.instance.navigate("/cart");
-                    },
-                    child: const Text(
-                      "View Cart",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: "Montserrat",
-                        fontSize: 14,
-                        height: 1.3,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+        backgroundColor: primaryColor,
+        bottom: PreferredSize(
+          preferredSize: const Size(double.maxFinite, 70),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Edit26(
               hint: strings.get(24),
               color: (darkMode) ? Colors.black : Colors.white,
@@ -213,269 +133,328 @@ class _SubCategoryViewState extends State<SubCategoryView> {
               },
             ),
           ),
-          UIHelper.verticalSpaceSmall,
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return ValueListenableBuilder(
-                  valueListenable: _busyNfy,
-                  builder: (context, bool busy, _) {
-                    if (busy) {
-                      return const Center(
-                        child: LoaderWidget(),
-                      );
-                    }
-                    return IndexedStack(
-                      index: _search ? 0 : 1,
-                      children: [
-                        ValueListenableBuilder(
-                            valueListenable: _searchFilterNfy,
-                            builder: (context, List<CategoryServiceModal> list, _) {
-                              return ListView.builder(
-                                itemCount: list.length,
-                                shrinkWrap: true,
-                                padding: const EdgeInsets.all(14),
-                                itemBuilder: (context, index) {
-                                  var item = list[index];
-                                  return InkWell(
+        ),
+      ),
+      floatingActionButton: context.watch<HomeViewModal>().childCategories.isNotEmpty
+          ? SizedBox(
+              height: 35,
+              child: FloatingActionButton.extended(
+                  backgroundColor: primaryColor,
+                  onPressed: () {
+                    _childCategoryModalView();
+                  },
+                  label: Row(
+                    children: const [
+                      Icon(
+                        Icons.menu,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        "Menu",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  )),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      bottomNavigationBar: Consumer(
+        builder: (context, CartViewModel model, _) {
+          if (!model.isPresent) {
+            return const SizedBox();
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 14,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    "₹ ${model.totalPrice}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: CustomButton(
+                    text: "View Cart",
+                    onTap: () {
+                      Navigation.instance.navigate("/cart");
+                    },
+                    width: 160,
+                    height: 45,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return ValueListenableBuilder(
+            valueListenable: _busyNfy,
+            builder: (context, bool busy, _) {
+              if (busy) {
+                return const Center(
+                  child: LoaderWidget(),
+                );
+              }
+              return IndexedStack(
+                index: _search ? 0 : 1,
+                children: [
+                  ValueListenableBuilder(
+                      valueListenable: _searchFilterNfy,
+                      builder: (context, List<CategoryServiceModal> list, _) {
+                        return ListView.builder(
+                          itemCount: list.length,
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.all(14),
+                          itemBuilder: (context, index) {
+                            var item = list[index];
+                            return InkWell(
+                              onTap: () {
+                                showServiceModalView(item);
+                              },
+                              child: Column(
+                                children: [
+                                  ServiceWidget(
+                                    data: item,
                                     onTap: () {
                                       showServiceModalView(item);
                                     },
-                                    child: Column(
-                                      children: [
-                                        ServiceWidget(
-                                          data: item,
-                                          onTap: () {
-                                            showServiceModalView(item);
-                                          },
-                                          redirectRoute: SubCategoryView(
-                                            category: widget.category,
-                                          ),
-                                        ),
-                                        if (list.length - 1 != index) const Divider()
-                                      ],
+                                    redirectRoute: SubCategoryView(
+                                      category: widget.category,
                                     ),
-                                  );
-                                },
-                              );
-                            }),
-                        Consumer<HomeViewModal>(builder: (context, modal, _) {
-                          return SingleChildScrollView(
+                                  ),
+                                  if (list.length - 1 != index) const Divider()
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }),
+                  Consumer<HomeViewModal>(builder: (context, modal, _) {
+                    return SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_videoCtrl != null && _videoCtrl!.value.isInitialized)
+                            AspectRatio(
+                              aspectRatio: 1.6,
+                              child: VideoPlayer(_videoCtrl!),
+                            ),
+                          // if (_videoCtrl != null && _videoCtrl!.value.isInitialized)
+                          //   FittedBox(
+                          //     fit: BoxFit.cover,
+                          //     child: SizedBox(
+                          //       height: 420,
+                          //       width: _videoCtrl!.value.size.width,
+                          //       child: VideoPlayer(_videoCtrl!),
+                          //     ),
+                          //   ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            color: Colors.white,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (_videoCtrl != null) UIHelper.verticalSpaceMedium,
-                                if (_videoCtrl != null && _videoCtrl!.value.isInitialized)
-                                  FittedBox(
-                                    fit: BoxFit.cover,
-                                    child: SizedBox(
-                                      height: _videoCtrl!.value.size.width,
-                                      width: _videoCtrl!.value.size.width,
-                                      child: VideoPlayer(_videoCtrl!),
+                                UIHelper.verticalSpaceSmall,
+                                Text(
+                                  widget.category.name,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: "Montserrat",
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: const [
+                                    Icon(Icons.star),
+                                    SizedBox(width: 6),
+                                    // Text("0 (0)"),
+                                    Text(
+                                      "No Rating",
+                                      style: TextStyle(
+                                        fontFamily: "Montserrat",
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (widget.category.description.isNotEmpty)
+                                  UIHelper.verticalSpaceSmall,
+                                if (widget.category.description.isNotEmpty)
+                                  Text(
+                                    widget.category.description,
+                                    style: const TextStyle(
+                                      fontFamily: "Montserrat",
+                                      fontSize: 13,
                                     ),
                                   ),
-                                Padding(
-                                  padding: const EdgeInsets.all(14.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      UIHelper.verticalSpaceSmall,
-                                      Text(
-                                        widget.category.name,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          fontFamily: "Montserrat",
+                                UIHelper.verticalSpaceMedium,
+                                Builder(
+                                  builder: (context) {
+                                    if (modal.childCategories.isEmpty) {
+                                      return SizedBox(
+                                        height: constraints.maxHeight - 400,
+                                        child: Center(
+                                          child: Text(
+                                            "Service not available",
+                                            style: theme.style10W600Grey,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: const [
-                                          Icon(Icons.star),
-                                          SizedBox(width: 6),
-                                          // Text("0 (0)"),
-                                          Text(
-                                            "No Rating",
-                                            style: TextStyle(
-                                              fontFamily: "Montserrat",
-                                              fontSize: 13,
+                                      );
+                                    }
+                                    return Wrap(
+                                      spacing: 12,
+                                      runSpacing: 12,
+                                      children: modal.childCategories.map((data) {
+                                        final width = (constraints.maxWidth / 3) - 16;
+                                        return InkWell(
+                                          onTap: () {
+                                            int index = modal.childCategories.indexOf(data);
+                                            Scrollable.ensureVisible(
+                                                itemsKey[index].currentContext!);
+                                          },
+                                          focusColor: Colors.transparent,
+                                          highlightColor: Colors.transparent,
+                                          splashColor: Colors.transparent,
+                                          radius: 8,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(6),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      if (widget.category.description.isNotEmpty)
-                                        UIHelper.verticalSpaceSmall,
-                                      if (widget.category.description.isNotEmpty)
-                                        Text(
-                                          widget.category.description,
-                                          style: const TextStyle(
-                                            fontFamily: "Montserrat",
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      UIHelper.verticalSpaceMedium,
-                                      Builder(
-                                        builder: (context) {
-                                          if (modal.childCategories.isEmpty) {
-                                            return SizedBox(
-                                              height: constraints.maxHeight - 400,
-                                              child: Center(
-                                                child: Text(
-                                                  "Service not available",
-                                                  style: theme.style10W600Grey,
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                          return Wrap(
-                                            spacing: 12,
-                                            runSpacing: 12,
-                                            children: modal.childCategories.map((data) {
-                                              final width = (constraints.maxWidth / 3) - 18;
-                                              return InkWell(
-                                                onTap: () {
-                                                  int index = modal.childCategories.indexOf(data);
-                                                  Scrollable.ensureVisible(
-                                                      itemsKey[index].currentContext!);
-                                                },
-                                                focusColor: Colors.transparent,
-                                                highlightColor: Colors.transparent,
-                                                splashColor: Colors.transparent,
-                                                radius: 8,
-                                                child: Container(
-                                                  decoration: BoxDecoration(
+                                            width: width,
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Align(
+                                                  alignment: Alignment.topCenter,
+                                                  child: ClipRRect(
                                                     borderRadius: BorderRadius.circular(6),
-                                                  ),
-                                                  width: width,
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Align(
-                                                        alignment: Alignment.topCenter,
-                                                        child: ClipRRect(
-                                                          borderRadius: BorderRadius.circular(6),
-                                                          child: Container(
-                                                            decoration: BoxDecoration(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(12),
-                                                              color: highlightColor,
-                                                            ),
-                                                            child: CustomNetworkImage(
-                                                              url: data.imageUrl,
-                                                              height: 80,
-                                                            ),
-                                                          ),
-                                                        ),
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius: BorderRadius.circular(12),
+                                                        color: highlightColor,
                                                       ),
-                                                      UIHelper.verticalSpaceSmall,
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(8),
-                                                        child: Center(
-                                                          child: Text(
-                                                            data.name,
-                                                            style: theme.style11W600,
-                                                            maxLines: 2,
-                                                            textAlign: TextAlign.center,
-                                                          ),
-                                                        ),
-                                                      )
-                                                    ],
+                                                      child: CustomNetworkImage(
+                                                        url: data.imageUrl,
+                                                        height: 80,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
-                                              );
-                                            }).toList(),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                UIHelper.verticalSpaceSmall,
-                                const Divider(
-                                  color: highlightColor,
-                                  thickness: 8,
-                                ),
-                                UIHelper.verticalSpaceSmall,
-                                Padding(
-                                  padding: const EdgeInsets.all(14),
-                                  child: Column(
-                                    children: [
-                                      ...modal.childCategories.map((chCate) {
-                                        int index = modal.childCategories.indexOf(chCate);
-                                        var filterServices = modal.categoryServices
-                                            .where(
-                                                (element) => element.childCategoryId == chCate.id)
-                                            .toList();
-                                        return Column(
-                                          key: itemsKey[index],
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            UIHelper.verticalSpaceMedium,
-                                            Text(
-                                              chCate.name,
-                                              style: const TextStyle(
-                                                fontSize: 22,
-                                                fontFamily: "Montserrat",
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.4,
-                                                height: 1.4,
-                                              ),
-                                            ),
-                                            UIHelper.verticalSpaceSmall,
-                                            ListView.builder(
-                                              itemCount: filterServices.length,
-                                              physics: const NeverScrollableScrollPhysics(),
-                                              shrinkWrap: true,
-                                              itemBuilder: (context, index) {
-                                                var item = filterServices[index];
-                                                return InkWell(
-                                                  onTap: () {
-                                                    showServiceModalView(item);
-                                                  },
-                                                  child: Column(
-                                                    children: [
-                                                      ServiceWidget(
-                                                        data: item,
-                                                        onTap: () {
-                                                          showServiceModalView(item);
-                                                        },
-                                                        redirectRoute: SubCategoryView(
-                                                          category: widget.category,
-                                                        ),
-                                                      ),
-                                                      if (filterServices.length - 1 != index)
-                                                        const Divider()
-                                                    ],
+                                                UIHelper.verticalSpaceSmall,
+                                                Padding(
+                                                  padding: const EdgeInsets.all(8),
+                                                  child: Center(
+                                                    child: Text(
+                                                      data.name,
+                                                      style: theme.style11W600,
+                                                      maxLines: 2,
+                                                      textAlign: TextAlign.center,
+                                                    ),
                                                   ),
-                                                );
-                                              },
+                                                )
+                                              ],
                                             ),
-                                            UIHelper.verticalSpaceSmall,
-                                            const Divider(
-                                              thickness: 6,
-                                              color: highlightColor,
-                                            ),
-                                            UIHelper.verticalSpaceSmall,
-                                          ],
+                                          ),
                                         );
-                                      })
-                                    ],
-                                  ),
+                                      }).toList(),
+                                    );
+                                  },
                                 ),
-                                UIHelper.verticalSpaceMedium,
-                                UIHelper.verticalSpaceMedium,
                               ],
                             ),
-                          );
-                        })
-                      ],
+                          ),
+                          UIHelper.verticalSpaceSmall,
+                          Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              children: [
+                                ...modal.childCategories.map((chCate) {
+                                  int index = modal.childCategories.indexOf(chCate);
+                                  var filterServices = modal.categoryServices
+                                      .where((element) => element.childCategoryId == chCate.id)
+                                      .toList();
+                                  return Container(
+                                    decoration: dec,
+                                    padding: const EdgeInsets.all(12),
+                                    margin: const EdgeInsets.symmetric(vertical: 12),
+                                    child: Column(
+                                      key: itemsKey[index],
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          chCate.name,
+                                          style: const TextStyle(
+                                            fontSize: 20,
+                                            fontFamily: "Montserrat",
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.4,
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                        UIHelper.verticalSpaceSmall,
+                                        ListView.builder(
+                                          itemCount: filterServices.length,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemBuilder: (context, index) {
+                                            var item = filterServices[index];
+                                            return InkWell(
+                                              onTap: () {
+                                                showServiceModalView(item);
+                                              },
+                                              child: Column(
+                                                children: [
+                                                  ServiceWidget(
+                                                    data: item,
+                                                    onTap: () {
+                                                      showServiceModalView(item);
+                                                    },
+                                                    redirectRoute: SubCategoryView(
+                                                      category: widget.category,
+                                                    ),
+                                                  ),
+                                                  if (filterServices.length - 1 != index)
+                                                    const Divider()
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                })
+                              ],
+                            ),
+                          ),
+                          UIHelper.verticalSpaceMedium,
+                          UIHelper.verticalSpaceMedium,
+                        ],
+                      ),
                     );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                  })
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }

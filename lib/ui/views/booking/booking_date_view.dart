@@ -13,6 +13,7 @@ import 'package:socspl/ui/views/booking/booking_success_view.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
 import '../../widgets/custom/custom_button.dart';
+import '../home/component/home_booking_view.dart';
 
 class BookingDateView extends StatefulWidget {
   const BookingDateView({Key? key}) : super(key: key);
@@ -60,134 +61,143 @@ class _BookingDateViewState extends State<BookingDateView> {
       appBar: AppBar(
         title: const Text('Address'),
         elevation: 0.2,
-        backgroundColor: Colors.white,
       ),
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UIHelper.verticalSpaceMedium,
-                  const Padding(
-                    padding: EdgeInsets.all(14.0),
-                    child: Text(
-                      "Select date of service",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: "Montserrat",
-                      ),
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.all(14),
-                    child: Wrap(
-                      spacing: 14,
-                      children: [
-                        ...days.map(
-                          (e) {
-                            bool isActive = _currentFilter.compareTo(e) == 0;
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _currentFilter = e;
-                                });
-                              },
-                              child: Material(
-                                color: isActive ? Colors.orange.shade100 : Colors.white,
-                                elevation: 1.0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                  side: BorderSide(
-                                    color: isActive ? Colors.orange : Colors.grey.shade200,
-                                  ),
-                                ),
-                                child: Container(
-                                  width: 60,
-                                  padding: const EdgeInsets.all(14),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        _monthFormat.format(e),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: isActive ? Colors.black87 : Colors.black,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        "${e.day}",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: isActive ? Colors.black87 : Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  UIHelper.verticalSpaceMedium,
-                  Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Select start time of service",
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      UIHelper.verticalSpaceMedium,
+                      const Padding(
+                        padding: EdgeInsets.all(14.0),
+                        child: Text(
+                          "Select date of service",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             fontFamily: "Montserrat",
                           ),
                         ),
-                        UIHelper.verticalSpaceMedium,
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            double width = (constraints.maxWidth / 3) - 10;
-                            return Consumer<BookingViewModel>(builder: (context, model, _) {
+                      ),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.all(14),
+                        child: Wrap(
+                          spacing: 14,
+                          children: [
+                            ...days.map(
+                              (e) {
+                                bool isActive = _currentFilter.compareTo(e) == 0;
+                                return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _currentFilter = e;
+                                    });
+                                  },
+                                  child: Material(
+                                    color: isActive ? primaryColor.shade100 : Colors.white,
+                                    elevation: 1.0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                      side: BorderSide(
+                                        color: isActive ? primaryColor : Colors.grey.shade200,
+                                      ),
+                                    ),
+                                    child: Container(
+                                      width: 60,
+                                      padding: const EdgeInsets.all(14),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            _monthFormat.format(e),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: isActive ? Colors.black87 : Colors.black,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            "${e.day}",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: isActive ? Colors.black87 : Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      UIHelper.verticalSpaceMedium,
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Select start time of service",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: "Montserrat",
+                              ),
+                            ),
+                            UIHelper.verticalSpaceMedium,
+                            Consumer<BookingViewModel>(builder: (context, model, _) {
+                              double width = (constraints.maxWidth / 3) - 22;
+                              final filterTimeSlot = model.timerSlots.where((e) {
+                                if (_currentFilter
+                                        .compareTo(DateTime(now.year, now.month, now.day)) ==
+                                    0) {
+                                  if (e.timeSlot.isBefore(now.add(const Duration(hours: 1)))) {
+                                    return false;
+                                  }
+                                }
+                                return true;
+                              });
+                              if (filterTimeSlot.isEmpty) {
+                                return SizedBox(
+                                  height: constraints.maxHeight / 2,
+                                  child: const Center(
+                                    child: Text(
+                                      "Service Time not available for today",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: "Montserrat",
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }
                               return Wrap(
                                 spacing: 14,
                                 runSpacing: 14,
                                 children: [
-                                  ...model.timerSlots.map((e) {
-                                    bool disable = false;
+                                  ...filterTimeSlot.map((e) {
                                     bool isActive = _selectedTime == e;
-                                    if (_currentFilter
-                                            .compareTo(DateTime(now.year, now.month, now.day)) ==
-                                        0) {
-                                      if (e.timeSlot.isBefore(now.add(const Duration(hours: 1)))) {
-                                        disable = true;
-                                      }
-                                    }
                                     return InkWell(
-                                      onTap: disable
-                                          ? null
-                                          : () {
-                                              setState(() {
-                                                _selectedTime = e;
-                                              });
-                                            },
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTime = e;
+                                        });
+                                      },
                                       child: Material(
-                                        color: disable
-                                            ? highlightColor
-                                            : isActive
-                                                ? Colors.orange.shade100
-                                                : Colors.white,
-                                        elevation: disable ? 0.0 : 1.0,
+                                        color: isActive ? primaryColor.shade100 : Colors.white,
+                                        elevation: 1.0,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(6),
                                           side: BorderSide(
                                               color:
-                                                  isActive ? Colors.orange : Colors.grey.shade200),
+                                                  isActive ? primaryColor : Colors.grey.shade200),
                                         ),
                                         child: Container(
                                           width: width,
@@ -207,14 +217,14 @@ class _BookingDateViewState extends State<BookingDateView> {
                                   }),
                                 ],
                               );
-                            });
-                          },
+                            }),
+                          ],
                         ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
+                      )
+                    ],
+                  ),
+                );
+              },
             ),
           ),
           Padding(
@@ -315,7 +325,7 @@ class _BookingDateViewState extends State<BookingDateView> {
               const Divider(thickness: 2, color: highlightColor),
               UIHelper.verticalSpaceMedium,
               CustomButton(
-                text: "Proceed to Booking",
+                text: "Continue To Payment",
                 textStyle: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontFamily: "Montserrat",
@@ -324,37 +334,39 @@ class _BookingDateViewState extends State<BookingDateView> {
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  final dateFormat = DateFormat("yyyy-MM-dd");
-                  final model = context.read<BookingViewModel>();
-                  busyDialog();
-                  final res = model.bookService(
-                    ServiceBooking(
-                      address: model.userAddress!,
-                      date: dateFormat.format(_currentFilter),
-                      time: _timeFormat.format(_selectedTime!.timeSlot),
-                      cart: context.read<CartViewModel>().currentCart!,
-                    ),
-                  );
-                  res.then((value) {
-                    Navigator.of(context).pop();
-                    if (value.status == ApiStatus.success) {
-                      context.read<CartViewModel>().clearCartData();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => BookingSuccessView(
-                            id: value.data!.id,
-                            bookingId: value.data!.bookingId,
+                  _buildPaymentMethodModel(onTap: () {
+                    final dateFormat = DateFormat("yyyy-MM-dd");
+                    final model = context.read<BookingViewModel>();
+                    busyDialog();
+                    final res = model.bookService(
+                      ServiceBooking(
+                        address: model.userAddress!,
+                        date: dateFormat.format(_currentFilter),
+                        time: _timeFormat.format(_selectedTime!.timeSlot),
+                        cart: context.read<CartViewModel>().currentCart!,
+                      ),
+                    );
+                    res.then((value) {
+                      Navigator.of(context).pop();
+                      if (value.status == ApiStatus.success) {
+                        context.read<CartViewModel>().clearCartData();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => BookingSuccessView(
+                              id: value.data!.id,
+                              bookingId: value.data!.bookingId,
+                            ),
                           ),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(value.message),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(value.message),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    });
                   });
                 },
               ),
@@ -374,11 +386,62 @@ class _BookingDateViewState extends State<BookingDateView> {
     );
   }
 
+  void _buildPaymentMethodModel({required VoidCallback onTap}) {
+    showModalBottomSheet(
+        context: context,
+        builder: (ctx) {
+          return Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Payment Method",
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: "Montserrat",
+                  ),
+                ),
+                UIHelper.verticalSpaceMedium,
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  onTap: onTap,
+                  title: const Text(
+                    "Cash on Service",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: "Montserrat",
+                    ),
+                  ),
+                ),
+                const Divider(height: 2, thickness: 2),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  onTap: onTap,
+                  title: const Text(
+                    "Paytm (Not Available)",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: "Montserrat",
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   void busyDialog() {
     showDialog(
-        context: context,
-        builder: (context) {
-          return const LoaderWidget();
-        });
+      context: context,
+      builder: (context) {
+        return const LoaderWidget();
+      },
+    );
   }
 }

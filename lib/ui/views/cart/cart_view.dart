@@ -57,7 +57,6 @@ class _CartViewState extends State<CartView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Cart Summary"),
-        backgroundColor: Colors.white,
         elevation: 0.6,
         centerTitle: true,
       ),

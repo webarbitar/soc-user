@@ -9,6 +9,7 @@ class Edit26 extends StatefulWidget {
   final Function()? onTap;
   final void Function(String)? onSubmit;
   final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
   final TextEditingController controller;
   final TextInputType type;
   final Color color;
@@ -35,7 +36,7 @@ class Edit26 extends StatefulWidget {
       this.suffixIcon,
       this.onSuffixIconPress,
       this.onSubmit,
-      this.textInputAction})
+      this.textInputAction, this.focusNode})
       : super(key: key);
 
   @override
@@ -57,6 +58,7 @@ class _Edit26State extends State<Edit26> {
             controller: widget.controller,
             onFieldSubmitted: widget.onSubmit,
             textInputAction: widget.textInputAction,
+            focusNode: widget.focusNode,
             onTap: () async {
               if (widget.onTap != null) widget.onTap!();
             },

@@ -357,14 +357,14 @@ class BookingInvoiceUtil {
               children: [
                 buildText(
                   title: 'Sub total',
-                  value: formatPrice(priceWithoutGST(_bookingDetails.amount)),
+                  value: formatPrice(priceWithoutGST(_bookingDetails.totalAmount)),
                   unite: true,
                 ),
                 Divider(),
                 SizedBox(height: 2 * PdfPageFormat.mm),
                 buildText(
                   title: 'GST (18%)',
-                  value: formatPrice(_bookingDetails.amount * 0.18),
+                  value: formatPrice(_bookingDetails.totalAmount * 0.18),
                   unite: true,
                 ),
                 Divider(),
@@ -375,7 +375,7 @@ class BookingInvoiceUtil {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
-                  value: formatPrice(_bookingDetails.amount.toDouble()),
+                  value: formatPrice(_bookingDetails.totalAmount.toDouble()),
                   unite: true,
                 ),
                 SizedBox(height: 2 * PdfPageFormat.mm),

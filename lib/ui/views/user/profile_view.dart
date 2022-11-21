@@ -6,6 +6,7 @@ import 'package:socspl/core/constance/style.dart';
 import 'package:socspl/core/enum/api_status.dart';
 import 'package:socspl/core/utils/string_extension.dart';
 import 'package:socspl/ui/shared/messenger/util.dart';
+import 'package:socspl/ui/views/user/profile_update_view.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
 import '../../../core/view_modal/user/user_view_model.dart';
@@ -46,8 +47,24 @@ class _ProfileViewState extends State<ProfileView> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: backgroundColor,
         elevation: 0.2,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProfileUpdateView(),
+                ),
+              );
+            },
+            child: const Text(
+              "Edit",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
       backgroundColor: backgroundColor,
       body: Consumer<UserViewModel>(builder: (context, userModel, _) {
@@ -82,7 +99,7 @@ class _ProfileViewState extends State<ProfileView> {
                         width: 110,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(60),
                           boxShadow: const [
                             BoxShadow(
                               color: Colors.white,
@@ -112,7 +129,7 @@ class _ProfileViewState extends State<ProfileView> {
                         width: 110,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(60),
                           boxShadow: const [
                             BoxShadow(
                               color: Colors.white,
@@ -128,6 +145,7 @@ class _ProfileViewState extends State<ProfileView> {
                         ),
                         child: const Icon(
                           Icons.person,
+                          color: primaryColor,
                           size: 40,
                         ),
                       ),

@@ -4,7 +4,6 @@ import '../modal/imagedata.dart';
 import '../modal/stringdata.dart';
 import 'strings.dart';
 
-
 List<ProviderData> provider = [
   ProviderData(
       id: "1",
@@ -136,6 +135,7 @@ class ProviderData {
   List<StringData> desc;
   List<StringData> descTitle;
   String address;
+
   //String avatar;
   bool visible;
   int unread = 0;
@@ -150,12 +150,14 @@ class ProviderData {
   String logoServerPath = "";
   String logoLocalFile = "";
   List<ImageData> gallery = [];
+
   //
   List<WorkTimeData> workTime = [];
   List<String> category = [];
+
   //
   bool select = false;
-  final dataKey = new GlobalKey();
+  final dataKey = GlobalKey();
 
   bool favorite = true;
   bool unavailable;
@@ -209,47 +211,53 @@ class ProviderData {
       };
 
   factory ProviderData.fromJson(String id, Map<String, dynamic> data) {
-    List<String> _category = [];
-    if (data['category'] != null)
-      List.from(data['category']).forEach((element) {
-        _category.add(element);
-      });
-    List<ImageData> _gallery = [];
-    if (data['gallery'] != null)
-      List.from(data['gallery']).forEach((element) {
-        _gallery.add(ImageData(serverPath: element["serverPath"], localFile: element["localFile"]));
-      });
+    List<String> category = [];
+    if (data['category'] != null) {
+      for (var element in List.from(data['category'])) {
+        category.add(element);
+      }
+    }
+    List<ImageData> gallery = [];
+    if (data['gallery'] != null) {
+      for (var element in List.from(data['gallery'])) {
+        gallery.add(ImageData(serverPath: element["serverPath"], localFile: element["localFile"]));
+      }
+    }
     //
-    List<WorkTimeData> _workTime = [];
-    if (data['workTime'] != null)
-      List.from(data['workTime']).forEach((element) {
-        _workTime.add(WorkTimeData.fromJson(element));
-      });
+    List<WorkTimeData> workTime = [];
+    if (data['workTime'] != null) {
+      for (var element in List.from(data['workTime'])) {
+        workTime.add(WorkTimeData.fromJson(element));
+      }
+    }
     //
-    List<StringData> _name = [];
-    if (data['name'] != null)
-      List.from(data['name']).forEach((element) {
-        _name.add(StringData.fromJson(element));
-      });
-    List<StringData> _desc = [];
-    if (data['desc'] != null)
-      List.from(data['desc']).forEach((element) {
-        _desc.add(StringData.fromJson(element));
-      });
-    List<StringData> _descTitle = [];
-    if (data['descTitle'] != null)
-      List.from(data['descTitle']).forEach((element) {
-        _descTitle.add(StringData.fromJson(element));
-      });
+    List<StringData> name = [];
+    if (data['name'] != null) {
+      for (var element in List.from(data['name'])) {
+        name.add(StringData.fromJson(element));
+      }
+    }
+    List<StringData> desc = [];
+    if (data['desc'] != null) {
+      for (var element in List.from(data['desc'])) {
+        desc.add(StringData.fromJson(element));
+      }
+    }
+    List<StringData> descTitle = [];
+    if (data['descTitle'] != null) {
+      for (var element in List.from(data['descTitle'])) {
+        descTitle.add(StringData.fromJson(element));
+      }
+    }
     return ProviderData(
       id: id,
-      name: _name,
+      name: name,
       phone: (data["phone"] != null) ? data["phone"] : "",
       www: (data["www"] != null) ? data["www"] : "",
       instagram: (data["instagram"] != null) ? data["instagram"] : "",
       telegram: (data["telegram"] != null) ? data["telegram"] : "",
-      desc: _desc,
-      descTitle: _descTitle,
+      desc: desc,
+      descTitle: descTitle,
       address: (data["address"] != null) ? data["address"] : "",
       visible: (data["visible"] != null) ? data["visible"] : true,
       imageUpperServerPath:
@@ -257,9 +265,9 @@ class ProviderData {
       imageUpperLocalFile: (data["imageUpperLocalFile"] != null) ? data["imageUpperLocalFile"] : "",
       logoServerPath: (data["logoServerPath"] != null) ? data["logoServerPath"] : "",
       logoLocalFile: (data["logoLocalFile"] != null) ? data["logoLocalFile"] : "",
-      gallery: _gallery,
-      workTime: _workTime,
-      category: _category,
+      gallery: gallery,
+      workTime: workTime,
+      category: category,
       //avatar: (data["avatar"] != null) ? data["avatar"] : "",
       login: (data["login"] != null) ? data["login"] : "",
     );

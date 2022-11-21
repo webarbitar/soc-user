@@ -33,7 +33,6 @@ class _RateCardViewState extends State<RateCardView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Rate Card"),
-        backgroundColor: Colors.white,
         elevation: 1.0,
       ),
       body: ValueListenableBuilder(
