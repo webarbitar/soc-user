@@ -61,7 +61,7 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                   if (model.bookingDetails!.services.isNotEmpty)
                     ...model.bookingDetails!.services.map((bk) {
                       var data =
-                      model.bookedServices.singleWhere((element) => element.id == bk.serviceId);
+                          model.bookedServices.singleWhere((element) => element.id == bk.serviceId);
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 14.0),
                         child: Material(
@@ -282,7 +282,7 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                         const Divider(),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children:  [
+                          children: [
                             const Text(
                               "User Paid",
                               style: TextStyle(
@@ -305,7 +305,6 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                         UIHelper.verticalSpaceSmall,
                         const Divider(),
                         UIHelper.verticalSpaceSmall,
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -382,23 +381,24 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                   ],
                 ),
               )
-            else
-              if (model.bookingDetails!.completeOtpVerified == 1 &&
-                  model.bookingDetails!.paymentStatus == "pending")
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CustomButton(
-                    text: "Pay Bill",
-                    onTap: _buildPaymentMethodModel,
-                  ),
-                )
+            else if (model.bookingDetails!.completeOtpVerified == 1 &&
+                model.bookingDetails!.paymentStatus == "pending")
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CustomButton(
+                  text: "Pay Bill",
+                  onTap: () {
+                    _buildPaymentMethodModel(total - userAdvance);
+                  },
+                ),
+              )
           ],
         ),
       ),
     );
   }
 
-  void _buildPaymentMethodModel() {
+  void _buildPaymentMethodModel(int amount) {
     final model = context.read<BookingViewModel>();
     showModalBottomSheet(
         context: context,
@@ -455,7 +455,8 @@ class _BookingInvoiceViewState extends State<BookingInvoiceView> {
                     final model = context.read<BookingViewModel>();
                     Navigator.of(ctx).pop();
                     loadingDialog(context);
-                    final res = model.initPaytmPayment();
+                    final res = model.initPaytmPayment(
+                        bookingId: model.bookingDetails!.id, amount: amount.toDouble());
                     res.then((value) {
                       if (value.status == ApiStatus.error) {
                         showErrorMessage(value.message);

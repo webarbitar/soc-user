@@ -27,9 +27,9 @@ class BannerService with ServiceMixin {
     }
   }
 
-  Future<ResponseModal<List<BannerModal>>> fetchHomeBanners() async {
+  Future<ResponseModal<List<BannerModal>>> fetchHomeBanners(String cityId) async {
     final header = {"Authorization": "Bearer ${_storage.token}"};
-    final res = await http.get(parseUri(homeBanner), headers: header);
+    final res = await http.get(parseUri("$homeBanner?city_id=$cityId"), headers: header);
     switch (res.statusCode) {
       case 200:
         final jsonData = jsonDecode(res.body);

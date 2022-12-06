@@ -93,6 +93,7 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
 
   @override
   Widget build(BuildContext context) {
+    print('data');
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -111,6 +112,13 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
             onCameraIdle: () {
               // _animateCtrl.reverse();
               _fetchLocation();
+              Future.delayed(
+                const Duration(milliseconds: 700),
+                () {
+                  _dragController.animateTo(0.8,
+                      duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+                },
+              );
             },
             onCameraMove: (pos) {
               // _animateCtrl.forward();
@@ -519,9 +527,15 @@ class _BookingAddressViewState extends State<BookingAddressView> with MapConfig 
       print(res.data!.postalCode);
       print('****');
       print('****');
-      _city = await modal.checkCityAvailability(res.data!.locality, notify: false);
-      _city ??=
-          await modal.checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
+
+      if (res.data!.locality.isNotEmpty) {
+        _city = await modal.checkCityAvailability(res.data!.locality, notify: false);
+      }
+      if (res.data!.administrativeAreaLevel2.isNotEmpty) {
+        _city ??=
+            await modal.checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
+      }
+      print(_city?.name);
     }
     _busyNfy.value = false;
   }

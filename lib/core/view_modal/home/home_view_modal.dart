@@ -95,7 +95,9 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
     } else {
       currentAddress = pref.address!;
       currentLatLng = pref.latLng;
-      await checkCityAvailability(pref.city!, notify: false);
+      if (pref.city != null) {
+        await checkCityAvailability(pref.city!, notify: false);
+      }
     }
 
     final res = await bannerService.fetchAllBanner("${city?.id ?? ""}");
@@ -152,7 +154,7 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
   }
 
   Future<void> fetchHomeBanners() async {
-    final res = await bannerService.fetchHomeBanners();
+    final res = await bannerService.fetchHomeBanners("${city?.id ?? ""}");
     if (res.status == ApiStatus.success) {
       homeBanner = res.data!;
     }
@@ -251,10 +253,11 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
 
   Future<void> fetchSections({String search = ""}) async {
     setBusy(true);
-    final res = await categoryService.fetchSections(search: search);
+    final res = await categoryService.fetchSections("${city?.id ?? ""}", search: search);
     if (res.status == ApiStatus.success) {
       sections.clear();
       sections.addAll(res.data!);
+
     }
     busy = false;
   }
@@ -282,8 +285,11 @@ class HomeViewModal extends BaseViewModal with PermissionHandlerService {
       currentAddress = res.data!.formattedAddress;
       // Check city availability
       print(res.data!.locality);
-      final city = await checkCityAvailability(res.data!.locality, notify: false);
-      if (city == null) {
+      CityModal? city;
+      if (res.data!.locality.isNotEmpty) {
+        city = await checkCityAvailability(res.data!.locality, notify: false);
+      }
+      if (city == null && res.data!.administrativeAreaLevel2.isNotEmpty) {
         await checkCityAvailability(res.data!.administrativeAreaLevel2, notify: false);
       }
     }

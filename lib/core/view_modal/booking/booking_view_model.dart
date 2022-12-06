@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +87,7 @@ class BookingViewModel extends BaseViewModal {
     if (_timer != null) return;
     final context = Navigation.instance.navigatorKey.currentContext!;
     final navigation = Navigator.of(context);
-    _timer = Timer.periodic(const Duration(seconds: 4), (timer) async {
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
       if (!_pauseApiFetch) {
         final res = await _bookingService.fetchOngoingBooking(1);
         if (res.status == ApiStatus.success) {
@@ -135,13 +136,28 @@ class BookingViewModel extends BaseViewModal {
   Future<ResponseModal<BookedServiceModel>> bookService(ServiceBooking data) async {
     print(jsonEncode(data.toMap()));
     final res = await _bookingService.bookServices(data.toMap());
-    if (res.status == ApiStatus.success) {}
+    if (res.status == ApiStatus.success) {
+      if (data.paymentMethod == "paytm") {
+        final res2 =
+            await initPaytmPayment(bookingId: res.data!.id, amount: res.data!.amount.toDouble());
+        res.status = res2.status;
+        if (res.status != ApiStatus.success) {
+          res.message = res2.message;
+        }
+      }
+    }
     // return ResponseModal.error(message: "dsf");
     return res;
   }
 
   Future<ResponseModal> cancelBooking(int bookingId) async {
-    return await _bookingService.cancelBooking(bookingId);
+    final res = await _bookingService.cancelBooking(bookingId);
+    if (res.status == ApiStatus.success) {
+      _pendingBooking.removeWhere((element) => element.id == bookingId);
+      _confirmBooking.removeWhere((element) => element.id == bookingId);
+    }
+    notifyListeners();
+    return res;
   }
 
   Future<ResponseModal> fetchPendingBooking({bool notify = false}) async {
@@ -256,24 +272,59 @@ class BookingViewModel extends BaseViewModal {
     return await _bookingService.payBookingByCash(_bookingDetails!.id);
   }
 
-  Future<ResponseModal> initPaytmPayment() async {
-    final res = await _bookingService.generatePaytmToken(_bookingDetails!.id);
+  Future<ResponseModal> initPaytmPayment({required int bookingId, required double amount}) async {
+    final res = await _bookingService.generatePaytmToken(bookingId, amount);
     if (res.status == ApiStatus.success) {
       try {
-        var response = AllInOneSdk.startTransaction(
-            liveMerchantId, res.data!.orderId, "1.0", res.data!.body.txnToken, "", false, true);
-        response.then((value) {
-          print(value);
-        }).catchError((onError) {
-          res.status = ApiStatus.error;
-          if (onError is PlatformException) {
-            res.message = "${onError.message} ${onError.details}";
-          } else {
-            res.message = onError.toString();
-          }
-        });
-      } catch (err) {
-        print(err.toString());
+        debugPrint(testMerchantId);
+        debugPrint(res.data!.orderId);
+        debugPrint("$amount");
+        debugPrint(res.data!.body.txnToken);
+        debugPrint(testMerchantId);
+        var response = await AllInOneSdk.startTransaction(
+            testMerchantId,
+            res.data!.orderId,
+            "$amount",
+            res.data!.body.txnToken,
+            "https://securegw-stage.paytm.in/theia/paytmCallback",
+            true,
+            false);
+        // var response = await AllInOneSdk.startTransaction(
+        //     testMerchantId,
+        //     res.data!.orderId,
+        //     "10.00",
+        //     res.data!.body.txnToken,
+        //     "https://securegw-stage.paytm.in/theia/paytmCallback",
+        //     true,
+        //     false);
+        if (response?["STATUS"] == "TXN_SUCCESS") {
+          var res2 = await _bookingService.initialPaytmTransVerification(bookingId);
+          res.status = res2.status;
+          res.message = res2.message;
+        }
+
+        print('**********');
+        print('**********');
+        print('**********');
+        print(response);
+
+        print('**********');
+        print('**********');
+        print('**********');
+      } on PlatformException catch (onError) {
+        print('**********');
+        print('**********');
+        print('**********');
+        print(onError);
+        res.status = ApiStatus.error;
+        res.message = "${onError.message} ${onError.details}";
+      } catch (onError) {
+        print('**********');
+        print('**********');
+        print('**********');
+        print(onError);
+        res.status = ApiStatus.error;
+        res.message = onError.toString();
       }
     }
     return res;

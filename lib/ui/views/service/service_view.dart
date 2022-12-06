@@ -574,7 +574,6 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                     UIHelper.verticalSpaceMedium,
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        double width = (constraints.maxWidth / 3) - 8;
                         if (modal.addOnList.isEmpty) {
                           return Container();
                         }
@@ -585,46 +584,194 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 UIHelper.verticalSpaceSmall,
-                                Text(strings.get(93), style: theme.style12W800),
+                                Text("Addons", style: theme.style12W800),
                                 UIHelper.verticalSpaceSmall,
-                                Wrap(
-                                  runSpacing: 12,
-                                  spacing: 12,
-                                  children: modal.addOnList.map((data2) {
-                                    var cartAd = model.containsAdditionalService(data, data2);
-
-                                    return SizedBox(
-                                      width: width,
-                                      child: Column(
-                                        children: [
-                                          _buildAddOnView(
-                                            data2,
-                                            width: width,
-                                            onTap: () {
-                                              if (cartAd != null) {
-                                                model.removeAddOnServiceFromCart(cart!, cartAd);
-                                              } else {
-                                                model.addAddOnServiceToCart(data, data2);
-                                              }
-                                            },
-                                            isActive: cartAd != null,
-                                          ),
-                                          if (cartAd != null) UIHelper.verticalSpaceSmall,
-                                          if (cartAd != null)
-                                            buildQuantityView(
-                                              cartAd.quantity,
-                                              onIncrement: () {
-                                                model.increaseAdditionalServiceQty(cart!, cartAd);
+                                ...modal.addOnList.map((data2) {
+                                  print(data2.description);
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: SizedBox(
+                                            height: 70,
+                                            child: CachedNetworkImage(
+                                              errorWidget: (context, url, error) {
+                                                return Container();
                                               },
-                                              onDecrement: () {
-                                                model.decreaseAdditionalServiceQty(cart!, cartAd);
-                                              },
+                                              imageUrl: data.imageUrl,
                                             ),
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
+                                          ),
+                                        ),
+                                        UIHelper.horizontalSpaceSmall,
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                data2.name,
+                                                style: const TextStyle(
+                                                  fontFamily: "Montserrat",
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                "₹ ${data2.price}",
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontFamily: "Montserrat",
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Html(
+                                                data: data2.description,
+                                                shrinkWrap: true,
+                                                style: {
+                                                  "body": Style(
+                                                    margin: EdgeInsets.zero,
+                                                    padding: EdgeInsets.zero,
+                                                    fontFamily: "Montserrat",
+                                                    fontSize: FontSize.em(0.9),
+                                                    letterSpacing: 0.3,
+                                                  ),
+                                                  "a": Style(
+                                                    height: 0,
+                                                    display: Display.INLINE,
+                                                    whiteSpace: WhiteSpace.NORMAL,
+                                                  ),
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        UIHelper.horizontalSpaceSmall,
+                                        Consumer<CartViewModel>(
+                                          builder: (context, CartViewModel model, _) {
+                                            var cartAd =
+                                                model.containsAdditionalService(data, data2);
+                                            if (cartAd != null) {
+                                              return Material(
+                                                elevation: 2.0,
+                                                borderRadius: BorderRadius.circular(4),
+                                                color: Theme.of(context).primaryColor,
+                                                child: Container(
+                                                  height: 30,
+                                                  width: 70,
+                                                  decoration: BoxDecoration(
+                                                    gradient: const LinearGradient(
+                                                      colors: [
+                                                        Color(0xffff0044),
+                                                        Color(0xffff794d),
+                                                      ],
+                                                      begin: Alignment.topCenter,
+                                                      end: Alignment.bottomCenter,
+                                                    ),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  padding: const EdgeInsets.all(2.0),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      InkWell(
+                                                        onTap: () {
+                                                          model.decreaseAdditionalServiceQty(
+                                                              cart!, cartAd);
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.remove,
+                                                          color: Colors.white,
+                                                          size: 22,
+                                                        ),
+                                                      ),
+                                                      Flexible(
+                                                        child: Text(
+                                                          "${cartAd.quantity}",
+                                                          style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontWeight: FontWeight.w600,
+                                                          ),
+                                                          softWrap: false,
+                                                          overflow: TextOverflow.clip,
+                                                        ),
+                                                      ),
+                                                      InkWell(
+                                                        onTap: () {
+                                                          model.increaseAdditionalServiceQty(
+                                                              cart!, cartAd);
+                                                        },
+                                                        child: const Icon(
+                                                          Icons.add,
+                                                          color: Colors.white,
+                                                          size: 22,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            } else {
+                                              return SizedBox(
+                                                height: 30,
+                                                width: 70,
+                                                child: ElevatedButton(
+                                                  onPressed: () {
+                                                    if (Storage.instance.isLogin) {
+                                                      if (cartAd != null) {
+                                                        model.removeAddOnServiceFromCart(
+                                                            cart!, cartAd);
+                                                      } else {
+                                                        model.addAddOnServiceToCart(data, data2);
+                                                      }
+                                                    } else {
+                                                      Navigation.instance.navigate(
+                                                        "/login",
+                                                        args: widget.redirectRoute,
+                                                      );
+                                                    }
+                                                  },
+                                                  style: ElevatedButton.styleFrom(
+                                                    primary: Colors.transparent,
+                                                    padding: EdgeInsets.zero,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
+                                                  ),
+                                                  child: Container(
+                                                    height: 30,
+                                                    width: 70,
+                                                    decoration: BoxDecoration(
+                                                      gradient: const LinearGradient(
+                                                        colors: [
+                                                          Color(0xffff0044),
+                                                          Color(0xffff794d),
+                                                        ],
+                                                        begin: Alignment.topCenter,
+                                                        end: Alignment.bottomCenter,
+                                                      ),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
+                                                    child: const Center(
+                                                      child: Text(
+                                                        "Add",
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
                               ],
                             );
                           },
@@ -639,68 +786,6 @@ class _AddOnViewWidgetState extends State<AddOnViewWidget> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildAddOnView(AddOnModal data,
-      {VoidCallback? onTap, bool isActive = false, double? width}) {
-    print(data.imageUrl);
-    return InkWell(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          width: width,
-          height: 90,
-          child: Stack(
-            children: [
-              CachedNetworkImage(
-                errorWidget: (context, url, error) {
-                  return Container();
-                },
-                imageUrl: data.imageUrl,
-                fit: BoxFit.cover,
-                height: 90,
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  color: isActive ? Colors.black54 : Colors.black38,
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          data.name,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isActive ? Colors.orange : Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      UIHelper.verticalSpaceSmall,
-                      Text(
-                        "₹ ${data.price}",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isActive ? Colors.orange : Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

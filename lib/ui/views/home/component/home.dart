@@ -14,10 +14,8 @@ import 'package:socspl/ui/views/home/component/home_booking_view.dart';
 import 'package:socspl/ui/widgets/custom/custom_network_image.dart';
 import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
-import '../../../../core/constance/strings.dart';
 import '../../../../core/constance/style.dart';
 import '../../../../core/modal/category/category_modal.dart';
-import '../../../../core/utils/storage/storage.dart';
 import '../../../../core/view_modal/booking/booking_view_model.dart';
 import '../../../../core/view_modal/user/user_view_model.dart';
 import '../../../shared/ui_helpers.dart';
@@ -43,6 +41,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
+    _userViewModel = context.read<UserViewModel>();
+    _initFirebaseMessage();
     AwesomeNotifications().initialize(
       null,
       [
@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
           defaultColor: const Color(0xFF9D50DD),
           ledColor: Colors.white,
           importance: NotificationImportance.High,
-        )
+        ),
       ],
       // // Channel groups are only visual and are not required
       // channelGroups: [
@@ -63,12 +63,9 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       // ],
       debug: true,
     );
-    _userViewModel = context.read<UserViewModel>();
     _searchFocus.addListener(() {
       setState(() {});
     });
-
-    _initFirebaseMessage();
   }
 
   _initFirebaseMessage() {
@@ -86,14 +83,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                 change.doc.reference.update({"delivered": true});
                 AwesomeNotifications().createNotification(
                   content: NotificationContent(
-                      id: Random().nextInt(8),
-                      channelKey: 'message_channel',
-                      title: change.doc.get("messageBy"),
-                      body: change.doc.get("message"),
-                      category: NotificationCategory.Message
-                      // actionType: ActionType.Default,
-
-                      ),
+                    id: Random().nextInt(8),
+                    channelKey: 'message_channel',
+                    title: change.doc.get("messageBy"),
+                    body: change.doc.get("message"),
+                    category: NotificationCategory.Message,
+                  ),
                 );
               }
               break;
@@ -123,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       backgroundColor: mainColorGray,
       body: SafeArea(
         child: Consumer<HomeViewModal>(builder: (context, modal, _) {
+          print(modal.city?.name);
           return CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -214,7 +210,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                                                         size: 22,
                                                       ),
                                                     ),
-                                                    if (snapshot.data?.docs.isNotEmpty ?? false)
+                                                    if (snapshot.data != null &&
+                                                        snapshot.data!.docs.isNotEmpty)
                                                       Positioned(
                                                         top: 0,
                                                         right: -3,
@@ -350,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                   ),
                 ),
               ),
-              if (modal.busy || modal.city == null)
+              if (modal.busy || modal.city == null || modal.categories.isEmpty)
                 SliverLayoutBuilder(
                   builder: (context, constraints) {
                     if (modal.busy) {
@@ -369,18 +366,24 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         child: SizedBox(
                           height: constraints.remainingPaintExtent,
                           width: double.maxFinite,
-                          child: const Center(
-                            child: SizedBox(
-                              width: 320,
-                              child: Text(
-                                "Sorry for inconvenience, our service is not available in this area.",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                          child: Column(
+                            children: [
+                              Image.asset("assets/images/service-unavailable.jpg"),
+                              const Center(
+                                child: SizedBox(
+                                  width: 320,
+                                  child: Text(
+                                    "Our Services are not available in this City yet. We will come here soon! Please try another location for now or connect with our customer care.",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: "Montserrat"
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       );
@@ -446,12 +449,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                             if (modal.offerBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
                             if (modal.offerBanners.isNotEmpty) UIHelper.verticalSpaceMedium,
                             if (modal.offerBanners.isNotEmpty) _buildPromoBanner(modal),
-                            UIHelper.verticalSpaceMedium,
-                            Container(
-                              color: primaryColor.shade50,
-                              padding: const EdgeInsets.all(14),
-                              child: _trendingCategories(),
-                            ),
+                            // UIHelper.verticalSpaceMedium,
+                            // Container(
+                            //   color: primaryColor.shade50,
+                            //   padding: const EdgeInsets.all(14),
+                            //   child: _trendingCategories(),
+                            // ),
 
                             UIHelper.verticalSpaceMedium,
                             if (modal.homeBanner.isNotEmpty)
@@ -770,128 +773,128 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     );
   }
 
-  Widget _trendingCategories() {
-    final modal = context.read<HomeViewModal>();
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return ListView.builder(
-          itemCount: modal.trendingCategories.length,
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            final cate = modal.trendingCategories[index];
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            cate.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: "Montserrat",
-                              height: 1.4,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (cate.description.isNotEmpty) const SizedBox(height: 6),
-                          if (cate.description.isNotEmpty)
-                            Text(
-                              cate.description,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                        ],
-                      ),
-                    ),
-                    UIHelper.horizontalSpaceSmall,
-                    // button134(
-                    //   strings.get(26),
-                    //   () {
-                    //     // modal.selectedCategory = cate.name;
-                    //     // Navigation.instance.navigate("/sub-category", args: cate);
-                    //   },
-                    //   true,
-                    //   theme.style14W800MainColor,
-                    // )
-                  ],
-                ),
-                UIHelper.horizontalSpaceSmall,
-                const Divider(),
-                UIHelper.horizontalSpaceSmall,
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    // crossAxisAlignment: WrapCrossAlignment.start,
-                    alignment: WrapAlignment.start,
-                    children: cate.subCategories.map((data) {
-                      final width = (constraints.maxWidth / 3) - 8;
-                      return InkWell(
-                        onTap: () {
-                          modal.selectedSubCategory = data.name;
-                          Navigation.instance.navigate("/sub-category", args: data);
-                        },
-                        child: SizedBox(
-                          width: width,
-                          child: Column(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(5),
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: highlightColor,
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(4),
-                                    ),
-                                  ),
-                                  width: width,
-                                  height: 90,
-                                  child: CustomNetworkImage(
-                                    url: data.imageUrl,
-                                    fit: BoxFit.fitHeight,
-                                    height: 240,
-                                  ),
-                                ),
-                              ),
-                              UIHelper.verticalSpaceSmall,
-                              Text(
-                                data.name,
-                                style: const TextStyle(
-                                  fontFamily: "Montserrat",
-                                  letterSpacing: 0.4,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black,
-                                ),
-                                textAlign: TextAlign.center,
-                              )
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                UIHelper.verticalSpaceMedium,
-                UIHelper.verticalSpaceSmall,
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+  // Widget _trendingCategories() {
+  //   final modal = context.read<HomeViewModal>();
+  //   return LayoutBuilder(
+  //     builder: (context, constraints) {
+  //       return ListView.builder(
+  //         itemCount: modal.trendingCategories.length,
+  //         physics: const NeverScrollableScrollPhysics(),
+  //         shrinkWrap: true,
+  //         itemBuilder: (context, index) {
+  //           final cate = modal.trendingCategories[index];
+  //           return Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Row(
+  //                 children: [
+  //                   Expanded(
+  //                     child: Column(
+  //                       crossAxisAlignment: CrossAxisAlignment.start,
+  //                       children: [
+  //                         Text(
+  //                           cate.name,
+  //                           style: const TextStyle(
+  //                             fontSize: 16,
+  //                             fontFamily: "Montserrat",
+  //                             height: 1.4,
+  //                             fontWeight: FontWeight.w600,
+  //                           ),
+  //                         ),
+  //                         if (cate.description.isNotEmpty) const SizedBox(height: 6),
+  //                         if (cate.description.isNotEmpty)
+  //                           Text(
+  //                             cate.description,
+  //                             style: const TextStyle(
+  //                               color: Colors.grey,
+  //                               fontSize: 13,
+  //                               fontWeight: FontWeight.w400,
+  //                             ),
+  //                             overflow: TextOverflow.ellipsis,
+  //                           ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                   UIHelper.horizontalSpaceSmall,
+  //                   // button134(
+  //                   //   strings.get(26),
+  //                   //   () {
+  //                   //     // modal.selectedCategory = cate.name;
+  //                   //     // Navigation.instance.navigate("/sub-category", args: cate);
+  //                   //   },
+  //                   //   true,
+  //                   //   theme.style14W800MainColor,
+  //                   // )
+  //                 ],
+  //               ),
+  //               UIHelper.horizontalSpaceSmall,
+  //               const Divider(),
+  //               UIHelper.horizontalSpaceSmall,
+  //               SingleChildScrollView(
+  //                 scrollDirection: Axis.horizontal,
+  //                 child: Wrap(
+  //                   spacing: 12,
+  //                   runSpacing: 12,
+  //                   // crossAxisAlignment: WrapCrossAlignment.start,
+  //                   alignment: WrapAlignment.start,
+  //                   children: cate.subCategories.map((data) {
+  //                     final width = (constraints.maxWidth / 3) - 8;
+  //                     return InkWell(
+  //                       onTap: () {
+  //                         modal.selectedSubCategory = data.name;
+  //                         Navigation.instance.navigate("/sub-category", args: data);
+  //                       },
+  //                       child: SizedBox(
+  //                         width: width,
+  //                         child: Column(
+  //                           children: [
+  //                             ClipRRect(
+  //                               borderRadius: BorderRadius.circular(5),
+  //                               child: Container(
+  //                                 decoration: const BoxDecoration(
+  //                                   color: highlightColor,
+  //                                   borderRadius: BorderRadius.all(
+  //                                     Radius.circular(4),
+  //                                   ),
+  //                                 ),
+  //                                 width: width,
+  //                                 height: 90,
+  //                                 child: CustomNetworkImage(
+  //                                   url: data.imageUrl,
+  //                                   fit: BoxFit.fitHeight,
+  //                                   height: 240,
+  //                                 ),
+  //                               ),
+  //                             ),
+  //                             UIHelper.verticalSpaceSmall,
+  //                             Text(
+  //                               data.name,
+  //                               style: const TextStyle(
+  //                                 fontFamily: "Montserrat",
+  //                                 letterSpacing: 0.4,
+  //                                 fontSize: 11,
+  //                                 fontWeight: FontWeight.w600,
+  //                                 color: Colors.black,
+  //                               ),
+  //                               textAlign: TextAlign.center,
+  //                             )
+  //                           ],
+  //                         ),
+  //                       ),
+  //                     );
+  //                   }).toList(),
+  //                 ),
+  //               ),
+  //               UIHelper.verticalSpaceMedium,
+  //               UIHelper.verticalSpaceSmall,
+  //             ],
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
   _buildSectionView() {
     final modal = context.read<HomeViewModal>();
@@ -934,14 +937,6 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                         var serv = data.services[index];
                         return InkWell(
                           onTap: () {
-                            // Navigator.of(context).push(
-                            //   MaterialPageRoute(
-                            //     builder: (context) => ChildCategoryView(
-                            //       categoryId: data.id,
-                            //       subCategoryId: serv.id,
-                            //     ),
-                            //   ),
-                            // );
 
                             FocusManager.instance.primaryFocus?.unfocus();
                             Navigator.of(context).push(

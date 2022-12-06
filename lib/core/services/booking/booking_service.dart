@@ -47,8 +47,6 @@ class BookingService with ServiceMixin {
       "Authorization": "Bearer ${_storage.token}",
       'Content-Type': 'application/json',
     };
-    print(header);
-    print(jsonEncode(data));
     request.headers.addAll(header);
     request.body = jsonEncode(data);
     http.StreamedResponse response = await request.send();
@@ -279,12 +277,17 @@ class BookingService with ServiceMixin {
     }
   }
 
-  Future<ResponseModal<GeneratePaytmTokenModel>> generatePaytmToken(int bookingId) async {
+  Future<ResponseModal<GeneratePaytmTokenModel>> generatePaytmToken(
+      int bookingId, double amount) async {
     var request = http.Request('POST', parseUri("$baseUrl/generate_payment_token"));
+    // var request = http.Request('POST', parseUri("http://192.168.1.9:8080/api/generate_payment_token"));
     var header = {"Authorization": "Bearer ${_storage.token}", 'Content-Type': 'application/json'};
     request.headers.addAll(header);
-    request.body = jsonEncode({'booking_id': bookingId});
+    print(bookingId);
+    print(amount);
+    request.body = jsonEncode({'booking_id': bookingId, 'amount': amount});
     http.StreamedResponse response = await request.send();
+
     final res = await response.stream.bytesToString();
     print(res);
     debugPrint("Request booking response ${response.statusCode} $res ");
@@ -294,6 +297,30 @@ class BookingService with ServiceMixin {
         if (jsonData["status"] == true) {
           final data = GeneratePaytmTokenModel.fromJson(jsonData["data"]);
           return ResponseModal.success(message: jsonData["message"], data: data);
+        } else {
+          return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);
+        }
+      default:
+        return streamErrorResponse(response);
+    }
+  }
+
+  Future<ResponseModal> initialPaytmTransVerification(int bookingId) async {
+    var request =
+        http.Request('POST', parseUri("$baseUrl/verify_transaction_after_payment_success"));
+    var header = {"Authorization": "Bearer ${_storage.token}", 'Content-Type': 'application/json'};
+    request.headers.addAll(header);
+    request.body = jsonEncode({'booking_id': bookingId});
+    http.StreamedResponse response = await request.send();
+
+    final res = await response.stream.bytesToString();
+    print(res);
+    switch (response.statusCode) {
+      case 200:
+        final jsonData = jsonDecode(res.trim());
+        print(jsonData);
+        if (jsonData["status"] == true) {
+          return ResponseModal.success(message: jsonData["message"]);
         } else {
           return ResponseModal.error(message: jsonData["error"] ?? jsonData["message"]);
         }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -85,11 +87,23 @@ class PendingBookingWidget extends StatefulWidget {
 
 class _PendingBookingWidgetState extends State<PendingBookingWidget> {
   final _busyNfy = ValueNotifier(false);
+  late Timer _timer;
+  bool _pause = true;
+
+  void initDataFetcher() {
+    final model = context.read<BookingViewModel>();
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (!_pause) {
+        model.fetchPendingBooking(notify: true);
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     initPendingBooking();
+    initDataFetcher();
   }
 
   initPendingBooking() {
@@ -128,14 +142,13 @@ class _PendingBookingWidgetState extends State<PendingBookingWidget> {
                 ...model.pendingBooking.map((data) {
                   return InkWell(
                     onTap: () async {
-                      final res = await Navigator.of(context).push(
+                      _pause = true;
+                      await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => BookingDetailsView(id: data.id),
                         ),
                       );
-                      if (res != null && res) {
-                        initPendingBooking();
-                      }
+                      _pause = false;
                     },
                     child: BookedServiceCardWidget(data: data),
                   );
@@ -146,6 +159,12 @@ class _PendingBookingWidgetState extends State<PendingBookingWidget> {
         },
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 }
 
@@ -158,11 +177,23 @@ class ConfirmedBookingWidget extends StatefulWidget {
 
 class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
   final _busyNfy = ValueNotifier(false);
+  late Timer _timer;
+  bool _pause = true;
+
+  void initDataFetcher() {
+    final model = context.read<BookingViewModel>();
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (!_pause) {
+        model.fetchConfirmBooking(notify: true);
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     initConfirmedBooking();
+    initDataFetcher();
   }
 
   initConfirmedBooking() {
@@ -203,14 +234,13 @@ class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
                 ...model.confirmBooking.map((data) {
                   return InkWell(
                     onTap: () async {
-                      final res = await Navigator.of(context).push(
+                      _pause = true;
+                      await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => BookingDetailsView(id: data.id),
                         ),
                       );
-                      if (res != null && res) {
-                        initConfirmedBooking();
-                      }
+                      _pause = false;
                     },
                     child: BookedServiceCardWidget(data: data),
                   );
@@ -221,6 +251,12 @@ class _ConfirmedBookingWidgetState extends State<ConfirmedBookingWidget> {
         },
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 }
 
@@ -305,6 +341,17 @@ class CompletedBookingWidget extends StatefulWidget {
 class _CompletedBookingWidgetState extends State<CompletedBookingWidget>
     with AutomaticKeepAliveClientMixin {
   final _busyNfy = ValueNotifier(false);
+  late Timer _timer;
+  bool _pause = true;
+
+  void initDataFetcher() {
+    final model = context.read<BookingViewModel>();
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (!_pause) {
+        model.fetchPendingBooking(notify: true);
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -317,6 +364,7 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget>
       }
       _busyNfy.value = false;
     });
+    initDataFetcher();
   }
 
   @override
@@ -345,12 +393,14 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget>
                 children: [
                   ...model.completedBooking.map((data) {
                     return InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
+                      onTap: () async {
+                        _pause = true;
+                        await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => BookingDetailsView(id: data.id),
                           ),
                         );
+                        _pause = false;
                       },
                       child: BookedServiceCardWidget(data: data),
                     );
@@ -365,7 +415,13 @@ class _CompletedBookingWidgetState extends State<CompletedBookingWidget>
   }
 
   @override
-  bool get wantKeepAlive => true;
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  bool get wantKeepAlive => false;
 }
 
 class BookedServiceCardWidget extends StatelessWidget {

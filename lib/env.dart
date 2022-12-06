@@ -6,8 +6,8 @@ const mapBaseUrl = "https://maps.googleapis.com/maps/api";
 const baseUrl = "https://webarbiter.in/socspl/public/api";
 
 // ============================== Paytm Test Credential ============================== //
-const testMerchantId = "dCioL002563891848869";
-const testMerchantKey = "le239LDi&n3xlvdU";
+const testMerchantId = "dCjoLO02563891848869";
+const testMerchantKey = "le239LDj&n3xlvdU";
 
 // ============================== Paytm Live Credential ============================== //
 const liveMerchantId = "ehfZYB91915465982614";

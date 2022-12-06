@@ -23,8 +23,10 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
   void initState() {
     super.initState();
     final homeModel = context.read<HomeViewModal>();
-    final cat = homeModel.categories.singleWhere((el) => el.id == widget.categoryId);
-    context.read<CartViewModel>().initCartModule(cat);
+    final cat = homeModel.categories.where((el) => el.id == widget.categoryId);
+    if (cat.isNotEmpty) {
+      context.read<CartViewModel>().initCartModule(cat.first);
+    }
   }
 
   @override

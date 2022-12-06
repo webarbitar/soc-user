@@ -1,9 +1,13 @@
+import 'dart:math';
+
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/view_modal/booking/booking_view_model.dart';
+import 'package:socspl/ui/views/booking/payment_method_view.dart';
 import 'package:socspl/ui/views/home/component/home_cart_view.dart';
 
 import '../../../core/constance/style.dart';
@@ -135,6 +139,15 @@ class _HomeViewState extends State<HomeView> {
               ),
             ],
           ),
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: () {
+          //     Navigator.of(context).push(MaterialPageRoute(
+          //       builder: (context) => PaymentMethodView(
+          //         onSelected: (p0) {},
+          //       ),
+          //     ));
+          //   },
+          // ),
           body: PageView(
             controller: _pageController,
             onPageChanged: (index) {
@@ -193,32 +206,43 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void fcmPushMessageHandler(RemoteMessage message) async {
-    final model = context.read<BookingViewModel>();
-    final data = message.data;
-    if (data.isNotEmpty) {
-      switch (data["event"]) {
-        case "service:booking:confirm":
-          model.fetchConfirmBooking(notify: true);
-          break;
-        case "service:booking:started":
-          // model.fetchOngoingBooking(notify: true);
-          print(data["data"].toString());
-          model.fetchBookingDetailsById(
-            int.parse(data["data"].toString()),
-            fetchService: false,
-            notify: true,
-          );
-          break;
-        case "service:booking:completeOtp":
-          model.fetchBookingDetailsById(
-            int.parse(data["data"].toString()),
-            fetchService: false,
-            notify: true,
-          );
-          break;
-        case "service:booking:completed":
-          model.fetchOngoingBooking(notify: true);
-          break;
+    if (message.notification != null) {
+      AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: Random().nextInt(8),
+          channelKey: 'message_channel',
+          title: message.notification!.title,
+          body: message.notification!.body,
+        ),
+      );
+    } else {
+      final model = context.read<BookingViewModel>();
+      final data = message.data;
+      if (data.isNotEmpty) {
+        switch (data["event"]) {
+          case "service:booking:confirm":
+            model.fetchConfirmBooking(notify: true);
+            break;
+          case "service:booking:started":
+            // model.fetchOngoingBooking(notify: true);
+            print(data["data"].toString());
+            model.fetchBookingDetailsById(
+              int.parse(data["data"].toString()),
+              fetchService: false,
+              notify: true,
+            );
+            break;
+          case "service:booking:completeOtp":
+            model.fetchBookingDetailsById(
+              int.parse(data["data"].toString()),
+              fetchService: false,
+              notify: true,
+            );
+            break;
+          case "service:booking:completed":
+            model.fetchOngoingBooking(notify: true);
+            break;
+        }
       }
     }
   }

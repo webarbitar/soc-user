@@ -13,8 +13,9 @@ class Storage {
 
   late SharedPreferences pref;
 
-  Future<void> initializeStorage() async {
+  Future<SharedPreferences> initializeStorage() async {
     pref = await SharedPreferences.getInstance();
+    return pref;
   }
 
   bool get isLogin => pref.getBool("isLoggedIn") ?? false;
@@ -54,12 +55,16 @@ class Storage {
   Future<void> setLocation({
     required LatLng latLng,
     required String address,
-    required CityModal city,
+    required CityModal? city,
   }) async {
+    if (city != null) {
+      await pref.setString("city", city.name);
+    } else {
+      await pref.remove("city");
+    }
     await pref.setDouble("lat", latLng.latitude);
     await pref.setDouble("lng", latLng.longitude);
     await pref.setString("address", address);
-    await pref.setString("city", city.name);
   }
 
   Future<void> logout() async {

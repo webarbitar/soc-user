@@ -124,7 +124,7 @@ class _ReviewProviderViewState extends State<ReviewProviderView> {
                         ));
                         if (!mounted) return;
                         Navigator.of(context).pop();
-                        Navigation.instance.navigateAndRemoveUntil("/home", args: 1);
+                        Navigation.instance.navigateAndRemoveUntil("/home");
                       },
                     ),
                     UIHelper.verticalSpaceMedium,

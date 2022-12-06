@@ -131,8 +131,9 @@ class CategoryService with ServiceMixin {
 
   Future<ResponseModal<CategoryServiceModal>> fetchServiceById(String id, String cityId) async {
     final header = {"Authorization": "Bearer ${_storage.token}"};
+    // ?city_id=$cityId
     final res = await http.get(
-      parseUri("$baseUrl/service/$id?city_id=$cityId"),
+      parseUri("$baseUrl/service/$id"),
       headers: header,
     );
     print(res.body);
@@ -167,10 +168,11 @@ class CategoryService with ServiceMixin {
     }
   }
 
-  Future<ResponseModal<List<SectionModal>>> fetchSections({String search = ""}) async {
+  Future<ResponseModal<List<SectionModal>>> fetchSections(String cityId,
+      {String search = ""}) async {
     final header = {"Authorization": "Bearer ${_storage.token}"};
     final res = await http.get(
-      parseUri("$section?search=$search"),
+      parseUri("$section?city_id=$cityId&search=$search"),
       headers: header,
     );
     print(res.body);

@@ -14,6 +14,7 @@ import 'package:socspl/ui/widgets/loader/loader_widget.dart';
 
 import '../../widgets/custom/custom_button.dart';
 import '../home/component/home_booking_view.dart';
+import 'payment_method_view.dart';
 
 class BookingDateView extends StatefulWidget {
   const BookingDateView({Key? key}) : super(key: key);
@@ -28,9 +29,7 @@ class _BookingDateViewState extends State<BookingDateView> {
   final _timeFormat = DateFormat("hh:mm");
   final List<DateTime> days = [];
   late DateTime _currentFilter;
-
   TimeSlotModel? _selectedTime;
-
   final now = DateTime.now();
 
   @override
@@ -334,40 +333,47 @@ class _BookingDateViewState extends State<BookingDateView> {
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  _buildPaymentMethodModel(onTap: () {
-                    final dateFormat = DateFormat("yyyy-MM-dd");
-                    final model = context.read<BookingViewModel>();
-                    busyDialog();
-                    final res = model.bookService(
-                      ServiceBooking(
-                        address: model.userAddress!,
-                        date: dateFormat.format(_currentFilter),
-                        time: _timeFormat.format(_selectedTime!.timeSlot),
-                        cart: context.read<CartViewModel>().currentCart!,
-                      ),
-                    );
-                    res.then((value) {
-                      Navigator.of(context).pop();
-                      if (value.status == ApiStatus.success) {
-                        context.read<CartViewModel>().clearCartData();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => BookingSuccessView(
-                              id: value.data!.id,
-                              bookingId: value.data!.bookingId,
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => PaymentMethodView(
+                        onSelected: (val) {
+                          final dateFormat = DateFormat("yyyy-MM-dd");
+                          final model = context.read<BookingViewModel>();
+                          busyDialog();
+                          final res = model.bookService(
+                            ServiceBooking(
+                              address: model.userAddress!,
+                              date: dateFormat.format(_currentFilter),
+                              time: _timeFormat.format(_selectedTime!.timeSlot),
+                              paymentMethod: val,
+                              cart: context.read<CartViewModel>().currentCart!,
                             ),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(value.message),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    });
-                  });
+                          );
+                          res.then((value) {
+                            context.read<CartViewModel>().clearCartData();
+                            Navigator.of(context).pop();
+                            if (value.status == ApiStatus.success) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => BookingSuccessView(
+                                    id: value.data!.id,
+                                    bookingId: value.data!.bookingId,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(value.message),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                  );
                 },
               ),
               UIHelper.verticalSpaceMedium,
@@ -384,56 +390,6 @@ class _BookingDateViewState extends State<BookingDateView> {
         );
       },
     );
-  }
-
-  void _buildPaymentMethodModel({required VoidCallback onTap}) {
-    showModalBottomSheet(
-        context: context,
-        builder: (ctx) {
-          return Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Payment Method",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: "Montserrat",
-                  ),
-                ),
-                UIHelper.verticalSpaceMedium,
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  onTap: onTap,
-                  title: const Text(
-                    "Cash on Service",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Montserrat",
-                    ),
-                  ),
-                ),
-                const Divider(height: 2, thickness: 2),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  onTap: onTap,
-                  title: const Text(
-                    "Paytm (Not Available)",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: "Montserrat",
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        });
   }
 
   void busyDialog() {

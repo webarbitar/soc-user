@@ -37,6 +37,8 @@ class _LocationPickerViewState extends State<LocationPickerView> {
 
   late LatLng _currentLatLng;
 
+  bool _busyMap = true;
+
   @override
   void initState() {
     super.initState();
@@ -75,12 +77,16 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                     ),
                     onMapCreated: (controller) {
                       _controller.complete(controller);
+                      _busyMap = false;
                     },
                     onCameraIdle: () {
                       _fetchLocation();
+                      _busyMap = false;
                     },
                     onCameraMove: (pos) {
+                      // if (!_busyMap) {
                       _currentLatLng = pos.target;
+                      // }
                     },
                     onTap: (arg) {
                       FocusManager.instance.primaryFocus?.unfocus();
@@ -221,29 +227,31 @@ class _LocationPickerViewState extends State<LocationPickerView> {
                       alignment: Alignment.centerRight,
                       child: button134(
                         "Confirm Location",
-                        () {
+                        () async {
                           final modal = context.read<HomeViewModal>();
-                          if (modal.city != null) {
-                            modal.currentAddress = _addressNfy.value;
-                            modal.currentLatLng = _currentLatLng;
-                            Storage.instance.setLocation(
-                              latLng: _currentLatLng,
-                              address: _addressNfy.value,
-                              city: modal.city!,
-                            );
-                            modal.initHomeModule(context, initLocation: false);
-                            Navigation.instance.goBack();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Currently, our service is not available in this area.",
-                                  style: TextStyle(fontFamily: "Montserrat"),
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
+                          // if (modal.city != null) {
+                          modal.currentAddress = _addressNfy.value;
+                          modal.currentLatLng = _currentLatLng;
+                          await Storage.instance.setLocation(
+                            latLng: _currentLatLng,
+                            address: _addressNfy.value,
+                            city: modal.city,
+                          );
+                          if (!mounted) return;
+                          modal.initHomeModule(context, initLocation: false);
+                          Navigator.of(context).pop();
+                          // } else {
+                          //   Navigator.of(context).pop();
+                          //   // ScaffoldMessenger.of(context).showSnackBar(
+                          //   //   const SnackBar(
+                          //   //     content: Text(
+                          //   //       "Currently, our service is not available in this area.",
+                          //   //       style: TextStyle(fontFamily: "Montserrat"),
+                          //   //     ),
+                          //   //     backgroundColor: Colors.red,
+                          //   //   ),
+                          //   // );
+                          // }
                         },
                         true,
                         const TextStyle(
@@ -271,10 +279,14 @@ class _LocationPickerViewState extends State<LocationPickerView> {
     if (res.status == ApiStatus.success) {
       _addressNfy.value = res.data!.formattedAddress;
       // Check city availability
-      print(res.data!.locality);
-      final city = await modal.checkCityAvailability(res.data!.locality);
-      if (city == null) {
-        modal.checkCityAvailability(res.data!.administrativeAreaLevel2);
+      print("${res.data!.locality}tjos os ");
+      print("${res.data!.administrativeAreaLevel2}fdasfkjahsd");
+      CityModal? city;
+      if (res.data!.locality.isNotEmpty) {
+        city = await modal.checkCityAvailability(res.data!.locality);
+      }
+      if (city == null && res.data!.administrativeAreaLevel2.isNotEmpty) {
+        await modal.checkCityAvailability(res.data!.administrativeAreaLevel2);
       }
     }
   }
@@ -304,8 +316,9 @@ class _LocationPickerViewState extends State<LocationPickerView> {
   }
 
   void _updateCameraView(LatLng latLng) async {
+    _busyMap = true;
     final ctrl = await _controller.future;
-    ctrl.animateCamera(
+    await ctrl.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: latLng,

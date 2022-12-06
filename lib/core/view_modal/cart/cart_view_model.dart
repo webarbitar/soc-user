@@ -151,9 +151,12 @@ class CartViewModel extends BaseViewModal {
   }
 
   void clearCartData() {
-    _category = null;
     _carts.removeAt(_currentCartIndex!);
+    _carts.remove(_currentCart);
+    _currentCart = null;
+    _currentCartIndex = null;
     Storage.instance.updateLocalCart(_carts);
+    notifyListeners();
   }
 
   // void updateServiceCart(CartModel cart) {
@@ -296,6 +299,12 @@ class CartViewModel extends BaseViewModal {
       _currentCart!.items[index].additionalItem.remove(additionalItem);
     }
     _updateCart();
+    notifyListeners();
+  }
+
+  void removeCart(CartModel cart) {
+    _carts.remove(cart);
+    Storage.instance.updateLocalCart(_carts);
     notifyListeners();
   }
 }

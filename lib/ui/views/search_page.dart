@@ -11,6 +11,7 @@ import 'package:socspl/core/view_modal/home/home_view_modal.dart';
 import 'package:socspl/ui/shared/ui_helpers.dart';
 
 import '../../core/enum/api_status.dart';
+import '../../core/modal/city_modal.dart';
 import '../../env.dart';
 import '../shared/navigation/navigation.dart';
 
@@ -64,9 +65,12 @@ class _SearchPageState extends State<SearchPage> {
       // Check city availability
       print(res.data!.locality);
 
-      final city = await modal.checkCityAvailability(res.data!.locality);
-      if (city == null) {
-        modal.checkCityAvailability(res.data!.administrativeAreaLevel2);
+      CityModal? city;
+      if (res.data!.locality.isNotEmpty) {
+        city = await modal.checkCityAvailability(res.data!.locality);
+      }
+      if (city == null && res.data!.administrativeAreaLevel2.isNotEmpty) {
+        await modal.checkCityAvailability(res.data!.administrativeAreaLevel2);
       }
 
       if (!mounted) return;

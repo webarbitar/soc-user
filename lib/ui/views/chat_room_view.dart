@@ -256,7 +256,8 @@ class _ChatRoomViewState extends State<ChatRoomView> {
             reverse: true,
             itemBuilder: (BuildContext context, int index) {
               print(snapshot.data!.docs[index].get('message'));
-              if (!snapshot.data!.docs[index].get("read")) {
+              if (!snapshot.data!.docs[index].get("read") &&
+                  snapshot.data!.docs[index].get("userType") == "provider") {
                 snapshot.data!.docs[index].reference.update({"read": true});
               }
               return msgItem(

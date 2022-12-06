@@ -9,6 +9,7 @@ import 'package:socspl/ui/shared/messenger/util.dart';
 
 import '../../../core/constance/strings.dart';
 import '../../../core/constance/style.dart';
+import '../../../core/view_modal/user/user_view_model.dart';
 import '../../shared/navigation/navigation.dart';
 import '../../shared/ui_helpers.dart';
 import '../../widgets/appbars/appbar1.dart';
@@ -50,7 +51,6 @@ class OtpView extends StatelessWidget {
               const SizedBox(
                 height: 70,
               ),
-
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -121,8 +121,9 @@ class OtpView extends StatelessWidget {
                       FocusManager.instance.primaryFocus?.unfocus();
                       if (modal.isLogin) {
                         final res = modal.loginUser(_);
-                        res.then((value) {
+                        res.then((value) async {
                           if (value.status == ApiStatus.success) {
+                            await context.read<UserViewModel>().fetchUserProfile();
                             messageOk(context, value.message);
                             if (redirectRoute != null) {
                               Navigator.of(context).pop();
@@ -141,8 +142,9 @@ class OtpView extends StatelessWidget {
                         });
                       } else {
                         final res = modal.registerUser(_);
-                        res.then((value) {
+                        res.then((value) async {
                           if (value.status == ApiStatus.success) {
+                            await context.read<UserViewModel>().fetchUserProfile();
                             messageOk(context, value.message);
                             Navigation.instance.navigateAndRemoveUntil("/home");
                           } else {

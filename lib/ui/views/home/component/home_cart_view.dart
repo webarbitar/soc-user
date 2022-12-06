@@ -88,13 +88,31 @@ class _HomeCartViewState extends State<HomeCartView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            cat.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              fontFamily: "Montserrat",
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  cat.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    fontFamily: "Montserrat",
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  cartModel.removeCart(data);
+                                },
+                                padding: EdgeInsets.zero,
+                                visualDensity: VisualDensity.compact,
+                                alignment: Alignment.centerRight,
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                              )
+                            ],
                           ),
                           UIHelper.verticalSpaceMedium,
                           ...data.items.map(

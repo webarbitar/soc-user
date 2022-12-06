@@ -11,6 +11,8 @@ import 'package:socspl/ui/shared/ui_helpers.dart';
 import 'package:socspl/ui/shared/validator_mixin.dart';
 import 'package:socspl/ui/widgets/custom/custom_button.dart';
 
+import 'booking_details_view.dart';
+
 class BookingSuccessView extends StatefulWidget {
   final int id;
   final String bookingId;
@@ -45,7 +47,13 @@ class _BookingSuccessViewState extends State<BookingSuccessView> {
         if (res.status == ApiStatus.success) {
           if (model.bookingDetails!.status == "confirmed") {
             showSuccessMessage("Your request have been accepted");
-            Navigation.instance.navigateAndRemoveUntil("/home", args: 3);
+            Navigation.instance.navigateAndRemoveUntil("/home", args: 2);
+            if (!mounted) return;
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => BookingDetailsView(id: widget.id),
+              ),
+            );
             _timer?.cancel();
           }
         }
@@ -58,7 +66,7 @@ class _BookingSuccessViewState extends State<BookingSuccessView> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        return Future.value(false);
+        return Future.value(true);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -106,7 +114,7 @@ class _BookingSuccessViewState extends State<BookingSuccessView> {
               CustomButton(
                 text: "Go to Home",
                 onTap: () {
-                  Navigation.instance.navigateAndRemoveUntil("/home", args: 3);
+                  Navigation.instance.navigateAndRemoveUntil("/home", args: 2);
                 },
               )
             ],

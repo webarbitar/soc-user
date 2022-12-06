@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:socspl/core/constance/style.dart';
 import 'package:socspl/ui/views/home/home_view.dart';
+import 'package:wakelock/wakelock.dart';
 
 import 'firebase_options.dart';
 import 'provider_setup.dart';
@@ -22,6 +23,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Firebase initialize
+  Wakelock.enable();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
